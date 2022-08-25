@@ -16,4 +16,5 @@
         id,spu_name,description,
         category3_id,tm_id
     </sql>
+
 </mapper>

@@ -36,6 +36,7 @@ public class BaseAttrController {
                                @PathVariable("category2Id")Long category2Id,
                                @PathVariable("category3Id")Long category3Id){
         List<BaseAttrInfo> list =  baseAttrInfoService.attrInfoAndValueByCategoryId(category1Id,category2Id,category3Id);
+        System.out.println(list);
         return Result.ok(list);
     }
 

@@ -56,17 +56,37 @@ public class BaseTrademarkController {
         return Result.ok();
     }
 
+    /**
+     * 新增品牌
+     * @param baseTrademark 品牌信息
+     */
     @PostMapping("baseTrademark/save")
     public Result saveBaseTrademark(@RequestBody BaseTrademark baseTrademark){
         baseTrademarkService.save(baseTrademark);
         return Result.ok();
     }
 
+    /**
+     * 根据id删除品牌
+     * @param id 品牌id
+     */
     @DeleteMapping("baseTrademark/remove/{id}")
     public Result deleteBaseTrademarkById(@PathVariable("id") Long id){
         baseTrademarkService.removeById(id);
         return Result.ok();
     }
+
+    /**
+     * 查询Trademark全部信息
+     * @return
+     */
+    @GetMapping("baseTrademark/getTrademarkList")
+    public Result getTrademarkList(){
+        List<BaseTrademark> list = baseTrademarkService.list();
+        return Result.ok(list);
+    }
+
+
 
 
 

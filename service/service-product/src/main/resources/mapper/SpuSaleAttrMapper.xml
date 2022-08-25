@@ -15,4 +15,25 @@
         id,spu_id,base_sale_attr_id,
         sale_attr_name
     </sql>
+
+    <resultMap id="spuSaleAttrListMap"
+               type="com.atguigu.gmall.model.product.SpuSaleAttr"
+               autoMapping="true">
+        <id column="id" property="id"/>
+        <collection
+                property="spuSaleAttrValueList"
+                ofType="com.atguigu.gmall.model.product.SpuSaleAttrValue"
+                autoMapping="true">
+            <id column="vid" property="id"/>
+        </collection>
+    </resultMap>
+    <select id="spuSaleAttrList"
+            resultMap="spuSaleAttrListMap">
+        select ssa.id,ssa.base_sale_attr_id,ssa.sale_attr_name,ssa.spu_id,
+               ssav.sale_attr_value_name,ssav.id vid
+        from spu_sale_attr ssa
+        left join spu_sale_attr_value ssav
+        on ssa.spu_id = ssav.spu_id and ssa.base_sale_attr_id = ssav.base_sale_attr_id
+        where ssa.spu_id = #{spuId}
+    </select>
 </mapper>

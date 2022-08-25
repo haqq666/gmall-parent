@@ -15,10 +15,14 @@
         id,attr_name,category_id,
         category_level
     </sql>
-    <resultMap id="attrInfoAndValueByCategoryIdMap" type="com.atguigu.gmall.model.product.BaseAttrInfo" autoMapping="true">
-        <id column="id" property="id"></id>
-        <collection property="attrValueList" ofType="com.atguigu.gmall.model.product.BaseAttrValue" autoMapping="true">
-            <id column="id" property="id"></id>
+    <resultMap id="attrInfoAndValueByCategoryIdMap"
+               type="com.atguigu.gmall.model.product.BaseAttrInfo"
+               autoMapping="true">
+        <id column="id" property="id"/>
+        <collection property="attrValueList"
+                    ofType="com.atguigu.gmall.model.product.BaseAttrValue"
+                    autoMapping="true">
+            <id column="vid" property="id"/>
         </collection>
     </resultMap>
     <sql id="attrInfoWhere">
@@ -34,13 +38,15 @@
             </if>
         </where>
     </sql>
+
     <select id="attrInfoAndValueByCategoryId" resultMap="attrInfoAndValueByCategoryIdMap">
         select bai.id,bai.attr_name,bai.category_id,bai.category_level,
-               bav.id,bav.value_name,bav.attr_id
+               bav.id vid,bav.value_name,bav.attr_id
         from base_attr_info bai
         left join base_attr_value bav
         on bai.id = bav.attr_id
         <include refid="attrInfoWhere"/>
+
 
     </select>
 </mapper>
