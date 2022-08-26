@@ -27,13 +27,13 @@
     </resultMap>
     <sql id="attrInfoWhere">
         <where>
-            <if test="category1Id != null and category1Id != ''">
+            <if test="category1Id != null and category1Id != '0'">
                 category_id = #{category1Id} and category_level = 1
             </if>
-            <if test="category2Id != null and category2Id != ''">
+            <if test="category2Id != null and category2Id != '0'">
                 or category_id = #{category2Id} and category_level = 2
             </if>
-            <if test="category3Id != null and category3Id != ''">
+            <if test="category3Id != null and category3Id != '0'">
                 or category_id = #{category3Id} and category_level = 3
             </if>
         </where>

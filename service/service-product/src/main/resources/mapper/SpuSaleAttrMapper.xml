@@ -36,4 +36,16 @@
         on ssa.spu_id = ssav.spu_id and ssa.base_sale_attr_id = ssav.base_sale_attr_id
         where ssa.spu_id = #{spuId}
     </select>
+    <select id="spuSaleAttrMapper" resultMap="spuSaleAttrListMap">
+        select ssa.id,ssa.base_sale_attr_id,ssa.sale_attr_name,ssa.spu_id,
+               ssav.sale_attr_value_name,ssav.id vid,
+            IF(sksav.sale_attr_value_id  IS NULL,'0','1') as is_checked
+        from spu_sale_attr ssa
+                 left join spu_sale_attr_value ssav
+                           on ssa.spu_id = ssav.spu_id and ssa.base_sale_attr_id = ssav.base_sale_attr_id
+                left join sku_sale_attr_value sksav
+                            on ssav.id = sksav.sale_attr_value_id and sksav.sku_id = #{skuId}
+        where ssa.spu_id = #{spuId}
+        order by ssa.id,ssav.id
+    </select>
 </mapper>

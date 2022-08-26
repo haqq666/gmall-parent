@@ -16,6 +16,8 @@ import java.util.List;
 public interface SpuSaleAttrMapper extends BaseMapper<SpuSaleAttr> {
 
     List<SpuSaleAttr> spuSaleAttrList(@Param("spuId") Long spuId);
+
+    List<SpuSaleAttr> spuSaleAttrMapper(@Param("spuId") Long spuId, @Param("skuId") Long skuId);
 }
 
 

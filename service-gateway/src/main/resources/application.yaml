@@ -19,7 +19,13 @@ spring:
             allowCredentials: true
 
       routes:
-        - id: product-route
+        - id: product_route
           uri: lb://service-product
           predicates:
-          - Path=/admin/product/**
+            - Path=/admin/product/**
+
+        - id: web_all_route
+          uri: lb://web-all
+          predicates:
+            - Host=**.gmall.com
+

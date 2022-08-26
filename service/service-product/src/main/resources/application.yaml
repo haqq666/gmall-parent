@@ -20,3 +20,11 @@ app:
     ak: admin
     sk: admin123456
     bucket_name: gmall
+
+
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 50000
+        readTimeout: 50000

@@ -1,19 +1,18 @@
 package com.atguigu.gmall.product.service.impl;
 
-import com.atguigu.gmall.model.product.SkuAttrValue;
-import com.atguigu.gmall.model.product.SkuImage;
-import com.atguigu.gmall.model.product.SkuInfo;
-import com.atguigu.gmall.model.product.SkuSaleAttrValue;
-import com.atguigu.gmall.product.service.SkuAttrValueService;
-import com.atguigu.gmall.product.service.SkuImageService;
-import com.atguigu.gmall.product.service.SkuSaleAttrValueService;
+import com.atguigu.gmall.model.product.*;
+import com.atguigu.gmall.model.to.CategoryViewTo;
+import com.atguigu.gmall.model.to.SkuDetailsTo;
+import com.atguigu.gmall.product.mapper.BaseCategory3Mapper;
+import com.atguigu.gmall.product.service.*;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.atguigu.gmall.product.service.SkuInfoService;
 import com.atguigu.gmall.product.mapper.SkuInfoMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -33,6 +32,10 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo>
     SkuAttrValueService skuAttrValueService;
     @Autowired
     SkuSaleAttrValueService skuSaleAttrValueService;
+    @Resource
+    BaseCategory3Mapper baseCategory3Mapper;
+    @Autowired
+    SpuSaleAttrService spuSaleAttrService;
 
     @Override
     public void saveSkuInfo(SkuInfo skuInfo) {
@@ -76,6 +79,57 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo>
     public void onSale(Long skuId) {
         skuInfoMapper.UpdateIsSale(skuId,1); //1: 上架 0: 下架
         // TODO: es新增
+    }
+
+    @Override
+    public SkuDetailsTo getSkuDetailTo(Long skuId) {
+        SkuDetailsTo skuDetailsTo = new SkuDetailsTo();
+
+
+        SkuInfo skuInfo = skuInfoMapper.selectById(skuId);
+
+
+        Long category3Id = skuInfo.getCategory3Id();
+        //查询categoryView
+        CategoryViewTo categoryViewTo = baseCategory3Mapper.selectCategoryView(category3Id);
+        skuDetailsTo.setCategoryView(categoryViewTo);
+
+        //skuInfo
+        //	List<SkuImage> skuImageList;
+        QueryWrapper<SkuImage> wrapper = new QueryWrapper<>();
+        wrapper.eq("sku_id",skuId);
+        List<SkuImage> imageList = skuImageService.list(wrapper);
+        skuInfo.setSkuImageList(imageList);
+
+        //	List<SkuAttrValue> skuAttrValueList;
+        QueryWrapper<SkuAttrValue> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("sku_id",skuId);
+        List<SkuAttrValue> skuAttrValues = skuAttrValueService.list(queryWrapper);
+        skuInfo.setSkuAttrValueList(skuAttrValues);
+
+        //	List<SkuSaleAttrValue> skuSaleAttrValueList;
+        QueryWrapper<SkuSaleAttrValue> SaleAttrQueryWrapper = new QueryWrapper<>();
+        SaleAttrQueryWrapper.eq("sku_id",skuId);
+        List<SkuSaleAttrValue> SaleAttrList = skuSaleAttrValueService.list(SaleAttrQueryWrapper);
+//        List<SkuSaleAttrValue> skuSaleAttrValues = skuSaleAttrValueService.getSkuSaleAttrValueList(skuId);
+        skuInfo.setSkuSaleAttrValueList(SaleAttrList);
+
+        skuDetailsTo.setSkuInfo(skuInfo);
+
+        //price
+        BigDecimal price = skuInfoMapper.get1010price(skuId);
+        skuDetailsTo.setPrice(price);
+
+        //List<SpuSaleAttr> spuSaleAttrList;
+//        QueryWrapper<SpuSaleAttr> spuSaleAttrQueryWrapper = new QueryWrapper<>();
+//        spuSaleAttrQueryWrapper.eq("spu_id",skuInfo.getSpuId());
+//        List<SpuSaleAttr> spuSaleAttrList = spuSaleAttrService.list(spuSaleAttrQueryWrapper);
+        Long spuId = skuInfo.getSpuId();
+        List<SpuSaleAttr> spuSaleAttrList = spuSaleAttrService.getSpuSaleAttrList(spuId,skuId);
+        skuDetailsTo.setSpuSaleAttrList(spuSaleAttrList);
+
+
+        return skuDetailsTo;
     }
 }
 

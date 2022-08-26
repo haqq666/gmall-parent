@@ -15,4 +15,5 @@
         id,sku_id,spu_id,
         sale_attr_value_id
     </sql>
+
 </mapper>

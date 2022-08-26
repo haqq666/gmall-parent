@@ -2,6 +2,7 @@ package com.atguigu.gmall.product.service;
 
 
 import com.atguigu.gmall.model.product.SkuInfo;
+import com.atguigu.gmall.model.to.SkuDetailsTo;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
@@ -16,4 +17,6 @@ public interface SkuInfoService extends IService<SkuInfo> {
     void cancelSale(Long skuId);
 
     void onSale(Long skuId);
+
+    SkuDetailsTo getSkuDetailTo(Long skuId);
 }

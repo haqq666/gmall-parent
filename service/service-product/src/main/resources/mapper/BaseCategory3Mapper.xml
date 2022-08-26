@@ -13,4 +13,39 @@
     <sql id="Base_Column_List">
         id,name,category2_id
     </sql>
+
+    <resultMap id="getCategoryTreeMap" type="com.atguigu.gmall.model.to.CategoryTreeTo" autoMapping="true">
+        <id column="id" property="categoryId"/>
+        <result column="name" property="categoryName"/>
+        <collection property="categoryChild" ofType="com.atguigu.gmall.model.to.CategoryTreeTo" autoMapping="true">
+            <id column="bc2Id" property="categoryId"/>
+            <result column="bc2Name" property="categoryName"/>
+            <collection property="categoryChild" ofType="com.atguigu.gmall.model.to.CategoryTreeTo" autoMapping="true">
+                <id column="bc3Id" property="categoryId"/>
+                <result column="bc3Name" property="categoryName"/>
+            </collection>
+        </collection>
+    </resultMap>
+
+    <select id="getCategoryTreeTo" resultMap="getCategoryTreeMap">
+        select  bc1.id, bc1.name,
+               bc2.id bc2Id, bc2.name bc2Name, bc2.category1_id,
+                bc3.id bc3Id, bc3.name bc3Name, bc3.category2_id
+        from base_category1 bc1
+        left join
+            base_category2 bc2 on bc2.category1_id =  bc1.id
+        left join base_category3 bc3 on bc2.id = bc3.category2_id
+
+    </select>
+
+
+    <select id="selectCategoryView" resultType="com.atguigu.gmall.model.to.CategoryViewTo">
+        SELECT bc3.id category3Id,bc3.name category3Name,
+               bc2.id category2Id,bc2.name category2Name,
+               bc1.id category1Id,bc1.name category1Name
+        FROM base_category3 bc3
+                 LEFT JOIN base_category2 bc2 ON bc2.id = bc3.category2_id
+                 LEFT JOIN base_category1 bc1 ON bc1.id = bc2.category1_id
+        WHERE bc3.id = #{category3Id}
+    </select>
 </mapper>
