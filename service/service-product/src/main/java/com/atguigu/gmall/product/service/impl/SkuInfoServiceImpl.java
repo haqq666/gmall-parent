@@ -1,6 +1,7 @@
 package com.atguigu.gmall.product.service.impl;
 
 import com.atguigu.gmall.model.product.*;
+import com.atguigu.gmall.model.to.CategoryTreeTo;
 import com.atguigu.gmall.model.to.CategoryViewTo;
 import com.atguigu.gmall.model.to.SkuDetailsTo;
 import com.atguigu.gmall.product.mapper.BaseCategory3Mapper;
@@ -81,12 +82,20 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo>
         // TODO: es新增
     }
 
+    /**
+     * 查询SkuDetails 信息，将
+     * @param skuId
+     * @return
+     */
+    @Deprecated
     @Override
     public SkuDetailsTo getSkuDetailTo(Long skuId) {
+
         SkuDetailsTo skuDetailsTo = new SkuDetailsTo();
 
 
         SkuInfo skuInfo = skuInfoMapper.selectById(skuId);
+        skuDetailsTo.setSkuInfo(skuInfo);
 
 
         Long category3Id = skuInfo.getCategory3Id();
@@ -101,35 +110,58 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo>
         List<SkuImage> imageList = skuImageService.list(wrapper);
         skuInfo.setSkuImageList(imageList);
 
-        //	List<SkuAttrValue> skuAttrValueList;
-        QueryWrapper<SkuAttrValue> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("sku_id",skuId);
-        List<SkuAttrValue> skuAttrValues = skuAttrValueService.list(queryWrapper);
-        skuInfo.setSkuAttrValueList(skuAttrValues);
-
-        //	List<SkuSaleAttrValue> skuSaleAttrValueList;
-        QueryWrapper<SkuSaleAttrValue> SaleAttrQueryWrapper = new QueryWrapper<>();
-        SaleAttrQueryWrapper.eq("sku_id",skuId);
-        List<SkuSaleAttrValue> SaleAttrList = skuSaleAttrValueService.list(SaleAttrQueryWrapper);
-//        List<SkuSaleAttrValue> skuSaleAttrValues = skuSaleAttrValueService.getSkuSaleAttrValueList(skuId);
-        skuInfo.setSkuSaleAttrValueList(SaleAttrList);
-
-        skuDetailsTo.setSkuInfo(skuInfo);
-
         //price
         BigDecimal price = skuInfoMapper.get1010price(skuId);
         skuDetailsTo.setPrice(price);
 
-        //List<SpuSaleAttr> spuSaleAttrList;
-//        QueryWrapper<SpuSaleAttr> spuSaleAttrQueryWrapper = new QueryWrapper<>();
-//        spuSaleAttrQueryWrapper.eq("spu_id",skuInfo.getSpuId());
-//        List<SpuSaleAttr> spuSaleAttrList = spuSaleAttrService.list(spuSaleAttrQueryWrapper);
+        //private List<SpuSaleAttr> spuSaleAttrList;
         Long spuId = skuInfo.getSpuId();
         List<SpuSaleAttr> spuSaleAttrList = spuSaleAttrService.getSpuSaleAttrList(spuId,skuId);
         skuDetailsTo.setSpuSaleAttrList(spuSaleAttrList);
 
+        //private String valuesSkuJson;
+        String valuesSkuJson =  spuSaleAttrService.getAllSkuValuesSkuJson(spuId);
+        skuDetailsTo.setValuesSkuJson(valuesSkuJson);
 
         return skuDetailsTo;
+    }
+
+    @Override
+    public SkuInfo getSkuDetailToInfo(Long skuId) {
+        SkuInfo skuInfo = skuInfoMapper.selectById(skuId);
+        return skuInfo;
+    }
+
+    @Override
+    public CategoryViewTo getSkuDetailToCategoryTree(Long c3Id) {
+        CategoryViewTo categoryViewTo = baseCategory3Mapper.selectCategoryView(c3Id);
+        return categoryViewTo;
+    }
+
+    @Override
+    public List<SpuSaleAttr> getSpuDetailToSaleAttrList(Long spuId, Long skuId) {
+        List<SpuSaleAttr> spuSaleAttrList = spuSaleAttrService.getSpuSaleAttrList(spuId,skuId);
+        return spuSaleAttrList;
+    }
+
+    @Override
+    public String getSkuDetailToValuesSkuJson(Long spuId) {
+        String valuesSkuJson =  spuSaleAttrService.getAllSkuValuesSkuJson(spuId);
+        return valuesSkuJson;
+    }
+
+    @Override
+    public BigDecimal getSkuDetailTo1010price(Long skuId) {
+        BigDecimal price = skuInfoMapper.get1010price(skuId);
+        return price;
+    }
+
+    @Override
+    public List<SkuImage> getSkuInfoImageList(Long skuId) {
+        QueryWrapper<SkuImage> wrapper = new QueryWrapper<>();
+        wrapper.eq("sku_id",skuId);
+        List<SkuImage> images = skuImageService.list();
+        return images;
     }
 }
 

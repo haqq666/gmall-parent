@@ -10,11 +10,4 @@ spring:
     base-url: http://192.168.200.100:9411/
     sender:
       type: web
-  #设置超时
-feign:
-  client:
-    config:
-      default:
-        connectTimeout: 50000
-        readTimeout: 50000
 

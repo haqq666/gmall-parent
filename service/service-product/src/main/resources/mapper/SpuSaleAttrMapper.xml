@@ -48,4 +48,21 @@
         where ssa.spu_id = #{spuId}
         order by ssa.id,ssav.id
     </select>
+    <select id="getAllSkuValuesSkuJson" resultType="com.atguigu.gmall.model.to.SkuValueJson">
+        SELECT a.sku_id,
+               GROUP_CONCAT(DISTINCT sale_attr_value_id
+                            ORDER BY sale_attr_value_id ASC
+                            SEPARATOR '|' ) AS value_json
+        FROM (SELECT si.id sku_id,
+                     skuav.id vid,skuav.spu_id,skuav.sale_attr_value_id,
+                     ssav.`base_sale_attr_id`
+              FROM `sku_info` si
+                       LEFT JOIN `sku_sale_attr_value` skuav
+                                 ON si.id = skuav.sku_id
+                       LEFT JOIN `spu_sale_attr_value`ssav
+                                 ON ssav.id = skuav.sale_attr_value_id
+              WHERE si.spu_id = #{spuId}
+              ORDER BY si.id,ssav.base_sale_attr_id ) AS a
+        GROUP BY a.sku_id
+    </select>
 </mapper>

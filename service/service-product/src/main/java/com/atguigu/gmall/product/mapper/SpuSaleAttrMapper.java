@@ -2,6 +2,7 @@ package com.atguigu.gmall.product.mapper;
 
 
 import com.atguigu.gmall.model.product.SpuSaleAttr;
+import com.atguigu.gmall.model.to.SkuValueJson;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -18,6 +19,8 @@ public interface SpuSaleAttrMapper extends BaseMapper<SpuSaleAttr> {
     List<SpuSaleAttr> spuSaleAttrList(@Param("spuId") Long spuId);
 
     List<SpuSaleAttr> spuSaleAttrMapper(@Param("spuId") Long spuId, @Param("skuId") Long skuId);
+
+    List<SkuValueJson> getAllSkuValuesSkuJson(@Param("spuId") Long spuId);
 }
 
 

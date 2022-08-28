@@ -20,11 +20,15 @@ app:
     ak: admin
     sk: admin123456
     bucket_name: gmall
+  thread-pool:
+    core: 4
+    max: 8
+    queue-size: 2000
+    keep-alive-time: 300
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
 
-feign:
-  client:
-    config:
-      default:
-        connectTimeout: 50000
-        readTimeout: 50000

@@ -8,10 +8,19 @@ spring:
     base-url: http://192.168.200.100:9411/
     sender:
       type: web
+  redis:
+    host: 192.168.200.100
+    password: haqq123456
 
-feign:
-  client:
-    config:
-      default:
-        connectTimeout: 50000
-        readTimeout: 50000
+app:
+  thread-pool:
+    core: 4
+    max: 8
+    queue-size: 2000
+    keep-alive-time: 300
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"

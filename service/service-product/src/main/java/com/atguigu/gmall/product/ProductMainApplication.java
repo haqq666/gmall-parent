@@ -1,5 +1,6 @@
 package com.atguigu.gmall.product;
 
+import com.atguigu.gmall.common.annotation.EnableThreadPool;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.cloud.client.SpringCloudApplication;
@@ -10,6 +11,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
  * @version 1.0
  * @date 2022/8/23 17:27
  */
+@EnableThreadPool
 @MapperScan("com.atguigu.gmall.product.mapper")
 @SpringCloudApplication
 public class ProductMainApplication {
