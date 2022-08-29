@@ -2,6 +2,7 @@ package com.atguigu.gmall.item.service.impl;
 
 import com.atguigu.gmall.common.config.ThreadPool.ThreadPoolAutoConfiguration;
 import com.atguigu.gmall.common.result.Result;
+import com.atguigu.gmall.common.util.Jsons;
 import com.atguigu.gmall.item.feign.SkuDetailFeign;
 import com.atguigu.gmall.item.service.SkuDetailService;
 import com.atguigu.gmall.model.product.SkuImage;
@@ -9,15 +10,18 @@ import com.atguigu.gmall.model.product.SkuInfo;
 import com.atguigu.gmall.model.product.SpuSaleAttr;
 import com.atguigu.gmall.model.to.CategoryViewTo;
 import com.atguigu.gmall.model.to.SkuDetailsTo;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadPoolExecutor;
 
 /**
@@ -27,14 +31,70 @@ import java.util.concurrent.ThreadPoolExecutor;
  */
 @Service
 public class SkuDetailServiceImpl implements SkuDetailService {
-    @Resource
+
+    @Autowired
     SkuDetailFeign skuDetailFeign;
 
     @Autowired
     ThreadPoolExecutor executor;
 
+    //本地缓存
+   Map<Long,SkuDetailsTo> skuCache = new ConcurrentHashMap<>();
+
+    @Autowired
+    StringRedisTemplate stringRedisTemplate;
+
+
+    /**
+     * 使用Redis缓存 100/100 -2619/s
+     * @param skuId
+     * @return
+     */
     @Override
     public SkuDetailsTo getSkuDetailsTo(Long skuId) {
+
+        String jsonStr = stringRedisTemplate.opsForValue().get("sku:info:" + skuId);
+        if (StringUtils.isEmpty(jsonStr)){
+            SkuDetailsTo skuDetailsToRPC = getSkuDetailsToRPC(skuId);
+            stringRedisTemplate.opsForValue().set("sku:info:" + skuId, Jsons.toStr(skuDetailsToRPC));
+            return skuDetailsToRPC;
+        }
+
+        SkuDetailsTo skuDetailsTo = Jsons.toObj(jsonStr, SkuDetailsTo.class);
+        return skuDetailsTo;
+    }
+
+
+    /**
+     * 试用本地缓存 -100/100 4700/s
+     * getSkuDetailsToLocalCache
+     * @param skuId
+     * @return
+     */
+    public SkuDetailsTo getSkuDetailsToLocalCache(Long skuId) {
+
+        SkuDetailsTo skuDetailsTo = skuCache.get(skuId);
+        if (skuDetailsTo == null){
+            //没命中：
+            SkuDetailsTo skuDetailsToRPC = getSkuDetailsToRPC(skuId);
+            //将数据保存到缓存中
+            skuCache.put(skuId,skuDetailsToRPC);
+
+            return skuDetailsToRPC;
+        }
+
+        return skuDetailsTo;
+    }
+
+
+
+
+    /**
+     * 未引入缓存  -100/100  -208/s
+     * @param skuId
+     * @return
+     */
+    public SkuDetailsTo getSkuDetailsToRPC(Long skuId) {
 //        Result<SkuDetailsTo> result = skuDetailFeign.getSkuDetailTo(skuId);
         SkuDetailsTo skuDetailsTo = new SkuDetailsTo();
         // private SkuInfo skuInfo;
@@ -48,10 +108,10 @@ public class SkuDetailServiceImpl implements SkuDetailService {
         /**
          * 查图片列表
          */
-        infoFuture.thenAcceptAsync((info) -> {
+        CompletableFuture<Void>  imageFuture = infoFuture.thenAcceptAsync((info) -> {
             Result<List<SkuImage>> skuInfoImageList = skuDetailFeign.getSkuInfoImageList(skuId);
             info.setSkuImageList(skuInfoImageList.getData());
-        },executor);
+        }, executor);
 
         CompletableFuture<Void> categoryFuture = infoFuture.thenAcceptAsync((info) -> {
             //    private CategoryViewTo categoryView;
@@ -80,8 +140,45 @@ public class SkuDetailServiceImpl implements SkuDetailService {
             skuDetailsTo.setPrice(priceRes.getData());
         }, executor);
 
-        CompletableFuture.allOf(jsonFuture,priceFuture,saleAttrListFuture,categoryFuture).join();
+        CompletableFuture
+                .allOf(jsonFuture,priceFuture,saleAttrListFuture,categoryFuture,imageFuture)
+                .join();
 
         return skuDetailsTo;
     }
+    /**
+     * 串行
+     * @param skuId
+     * @return
+     */
+    public SkuDetailsTo getSkuDetailsToSerial(Long skuId) {
+        SkuDetailsTo skuDetailsTo = new SkuDetailsTo();
+
+        Result<SkuInfo> skuDetailToInfo = skuDetailFeign.getSkuDetailToInfo(skuId);
+        SkuInfo info = skuDetailToInfo.getData();
+        skuDetailsTo.setSkuInfo(info);
+
+        Result<List<SkuImage>> skuInfoImageList = skuDetailFeign.getSkuInfoImageList(skuId);
+        info.setSkuImageList(skuInfoImageList.getData());
+
+        Long category3Id = info.getCategory3Id();
+        Result<CategoryViewTo> viewToResult = skuDetailFeign.getSkuDetailToCategoryTree(category3Id);
+        skuDetailsTo.setCategoryView(viewToResult.getData());
+
+        Long spuId = info.getSpuId();
+        Result<List<SpuSaleAttr>> skuDetailToSaleAttrList = skuDetailFeign.getSkuDetailToSaleAttrList(spuId, skuId);
+        List<SpuSaleAttr> saleAttrList = skuDetailToSaleAttrList.getData();
+        skuDetailsTo.setSpuSaleAttrList(saleAttrList);
+
+        Result<String> skuJsonRes = skuDetailFeign.getSkuDetailToValuesSkuJson(spuId);
+        skuDetailsTo.setValuesSkuJson(skuJsonRes.getData());
+
+        Result<BigDecimal> priceRes = skuDetailFeign.getSkuDetailTo1010price(skuId);
+        skuDetailsTo.setPrice(priceRes.getData());
+
+
+
+        return skuDetailsTo;
+    }
+
 }

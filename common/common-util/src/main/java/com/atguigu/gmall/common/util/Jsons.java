@@ -12,15 +12,25 @@ import java.util.Map;
  */
 public class Jsons {
 
-    private static ObjectMapper objectMapper = new ObjectMapper();
+    private static ObjectMapper mapper = new ObjectMapper();
 
     public static String toStr(Object obj) {
         try {
-            String s = objectMapper.writeValueAsString(obj);
+            String s = mapper.writeValueAsString(obj);
             return s;
         } catch (JsonProcessingException e) {
             return null;
         }
 
+    }
+
+    public static<T> T toObj(String str,Class<T> clz){
+        try {
+            T t = mapper.readValue(str, clz);
+            return t;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

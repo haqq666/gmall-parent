@@ -16,8 +16,10 @@ import org.springframework.web.bind.annotation.PathVariable;
  */
 @Controller
 public class ItemController {
+
     @Autowired
     ItemFeignClient itemFeignClient;
+
     @GetMapping("{skuId}.html")
     public String item(@PathVariable("skuId")Long skuId, Model model){
 

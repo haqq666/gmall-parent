@@ -160,7 +160,7 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo>
     public List<SkuImage> getSkuInfoImageList(Long skuId) {
         QueryWrapper<SkuImage> wrapper = new QueryWrapper<>();
         wrapper.eq("sku_id",skuId);
-        List<SkuImage> images = skuImageService.list();
+        List<SkuImage> images = skuImageService.list(wrapper);
         return images;
     }
 }

@@ -35,10 +35,10 @@ public class ThreadPoolAutoConfiguration {
                 TimeUnit.SECONDS,
                 new LinkedBlockingDeque<>(appThreadPoolProperties.getQueueSize()),
                 new ThreadFactory() {
+                    int i = 1;
                     @Override
                     public Thread newThread(Runnable r) {
-                        int i = 1;
-                        Thread thread = new Thread();
+                        Thread thread = new Thread(r);
                         thread.setName(applicationName + "-core-thread-[" + i++ + "]");
                         return thread;
                     }

@@ -9,4 +9,7 @@ import com.atguigu.gmall.model.to.SkuDetailsTo;
  */
 public interface SkuDetailService {
     SkuDetailsTo getSkuDetailsTo(Long skuId);
+
+
+
 }
