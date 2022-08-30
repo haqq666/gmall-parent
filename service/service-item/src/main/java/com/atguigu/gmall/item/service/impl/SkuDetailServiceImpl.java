@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author HaQQ
@@ -54,9 +55,18 @@ public class SkuDetailServiceImpl implements SkuDetailService {
     public SkuDetailsTo getSkuDetailsTo(Long skuId) {
 
         String jsonStr = stringRedisTemplate.opsForValue().get("sku:info:" + skuId);
+        //以前缓存过，数据库没有记录，
+        if ("x".equals(jsonStr)){
+            return null;
+        }
         if (StringUtils.isEmpty(jsonStr)){
             SkuDetailsTo skuDetailsToRPC = getSkuDetailsToRPC(skuId);
-            stringRedisTemplate.opsForValue().set("sku:info:" + skuId, Jsons.toStr(skuDetailsToRPC));
+            String cacheJson = "x";
+            if (skuDetailsToRPC !=null){
+                stringRedisTemplate.opsForValue().set("sku:info:" + skuId, Jsons.toStr(skuDetailsToRPC),7, TimeUnit.DAYS);
+            }else {
+                stringRedisTemplate.opsForValue().set("sku:info:" + skuId, Jsons.toStr(skuDetailsToRPC),30, TimeUnit.MINUTES);
+            }
             return skuDetailsToRPC;
         }
 
