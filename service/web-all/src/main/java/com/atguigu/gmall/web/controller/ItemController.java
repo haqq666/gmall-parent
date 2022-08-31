@@ -27,7 +27,9 @@ public class ItemController {
 
         if (result.isOk()){
             SkuDetailsTo skuDetailsTo = result.getData();
-
+            if (skuDetailsTo == null || skuDetailsTo.getSkuInfo() == null){
+                return "item/404";
+            }
             model.addAttribute("categoryView",skuDetailsTo.getCategoryView());
             model.addAttribute("skuInfo", skuDetailsTo.getSkuInfo());
             model.addAttribute("spuSaleAttrList",skuDetailsTo.getSpuSaleAttrList());

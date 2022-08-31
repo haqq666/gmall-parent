@@ -17,7 +17,7 @@ public class ItemController {
     @Autowired
     SkuDetailService skuDetailService;
     @GetMapping("{skuId}")
-    public Result<SkuDetailsTo> SkuDetailsTo(@PathVariable("skuId")Long skuId){
+    public Result<SkuDetailsTo> skuDetailsTo(@PathVariable("skuId")Long skuId){
         SkuDetailsTo skuDetailsTo = skuDetailService.getSkuDetailsTo(skuId);
         return Result.ok(skuDetailsTo);
     }
