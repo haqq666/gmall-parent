@@ -82,7 +82,10 @@ public class CacheAspect {
                 if (lock) {
                     //回源
                     result = joinPoint.proceed(joinPoint.getArgs());
-                    cacheOpsService.saveCacheData(cacheKey, result);
+
+                    //获取存储时间
+                    Long ttl = determinTtl(joinPoint);
+                    cacheOpsService.saveCacheData(cacheKey, result,ttl);
                 } else {
                     Thread.sleep(1000);
                     //再次查缓存
@@ -97,6 +100,19 @@ public class CacheAspect {
 
         return result;
 
+    }
+
+    private Long determinTtl(ProceedingJoinPoint joinPoint) {
+        //获取方法的签名
+        MethodSignature signature = (MethodSignature) joinPoint.getSignature();
+        //获取方法的对象
+        Method method = signature.getMethod();
+        //拿到方法上面的注解（名为GmallCache）
+        GmallCache annotation = method.getAnnotation(GmallCache.class);
+        //拿到注解里面的值并返回
+        Long ttl = annotation.ttl();
+
+        return ttl;
     }
 
     private String determinLockName(ProceedingJoinPoint joinPoint) {
@@ -173,7 +189,7 @@ public class CacheAspect {
         GmallCache annotation = method.getAnnotation(GmallCache.class);
         //拿到注解里面的值并返回
         String expression = annotation.cacheKey();
-
+        //计算
         String cacheKey = evaluationExpression(expression,joinPoint,String.class);
 
         return cacheKey;

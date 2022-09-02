@@ -16,4 +16,5 @@ public @interface GmallCache {
     String bloomName() default "";
     String bloomValue() default "";
     String lockName() default "lock:global:";
+    long ttl() default 60*30L;
 }

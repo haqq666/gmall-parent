@@ -2,20 +2,14 @@ server:
   port: 9000
 
 spring:
+  profiles:
+    include: sharding
   #数据源
   datasource:
     url: jdbc:mysql://192.168.200.100:3306/gmall_product?useSSL=false&characterEncoding=utf-8
     username: root
     password: 123456
     driver-class-name: com.mysql.jdbc.Driver
-    #链路追踪
-  zipkin:
-    base-url: http://192.168.200.100:9411/
-    sender:
-      type: web
-  redis:
-    host: 192.168.200.100
-    password: haqq123456
 
 app:
   minio:
@@ -35,12 +29,4 @@ management:
       exposure:
         include: "*"
 
-
-feign:
-  httpclient:
-    enabled: true
-  client:
-    default:
-      ConnectTimeOut: 10000
-      ReadTimeOut: 10000
 

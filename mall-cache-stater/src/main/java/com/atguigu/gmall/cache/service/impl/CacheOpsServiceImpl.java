@@ -5,14 +5,19 @@ import com.atguigu.gmall.cache.constant.SysRedisConstant;
 import com.atguigu.gmall.cache.service.CacheOpsService;
 import com.atguigu.gmall.cache.utils.Jsons;
 import com.fasterxml.jackson.core.type.TypeReference;
+import jodd.util.StringUtil;
 import org.redisson.api.RBloomFilter;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Type;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -28,6 +33,8 @@ public class CacheOpsServiceImpl implements CacheOpsService {
     StringRedisTemplate redisTemplate;
     @Autowired
     RedissonClient redissonClient;
+
+    ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(4);
 
     @Override
     public Object getCacheData(String key, Type type) {
@@ -108,6 +115,22 @@ public class CacheOpsServiceImpl implements CacheOpsService {
     }
 
     @Override
+    public void saveCacheData(String key, Object obj, Long ttl) {
+        if (obj == null){
+            redisTemplate.opsForValue() .set(key,
+                    SysRedisConstant.NULL_VAL,
+                    SysRedisConstant.NULL_VAL_TTL,
+                    TimeUnit.SECONDS);
+        }else {
+            String objJson = Jsons.toStr(obj);
+            redisTemplate.opsForValue().set(key,
+                    objJson,
+                   ttl,
+                    TimeUnit.SECONDS);
+        }
+    }
+
+    @Override
     public void unlock(Long skuId) {
         String catchKey = SysRedisConstant.LOCK_SKU_DETAILS + skuId;
         RLock rLock = redissonClient.getLock(catchKey);
@@ -126,5 +149,14 @@ public class CacheOpsServiceImpl implements CacheOpsService {
     public void unlock(String lockName) {
         RLock rLock = redissonClient.getLock(lockName);
         rLock.unlock();
+    }
+
+    @Override
+    public void delay2delete(String cacheKey) {
+        redisTemplate.delete(cacheKey);
+
+        scheduledExecutorService.schedule(()->{
+            redisTemplate.delete(cacheKey);
+        },5,TimeUnit.SECONDS);
     }
 }

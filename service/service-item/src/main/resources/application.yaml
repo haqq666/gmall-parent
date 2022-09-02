@@ -4,13 +4,6 @@ server:
 spring:
   autoconfigure:
     exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
-  zipkin:
-    base-url: http://192.168.200.100:9411/
-    sender:
-      type: web
-  redis:
-    host: 192.168.200.100
-    password: haqq123456
 
 app:
   thread-pool:
@@ -24,11 +17,3 @@ management:
     web:
       exposure:
         include: "*"
-
-feign:
-  httpclient:
-    enabled: true
-  client:
-    default:
-      ConnectTimeOut: 10000
-      ReadTimeOut: 10000

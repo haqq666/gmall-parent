@@ -4,7 +4,7 @@ import com.atguigu.gmall.cache.annontation.GmallCache;
 import com.atguigu.gmall.cache.service.CacheOpsService;
 import com.atguigu.gmall.common.constant.SysRedisConstant;
 import com.atguigu.gmall.common.result.Result;
-import com.atguigu.gmall.item.feign.SkuDetailFeign;
+import com.atguigu.gmall.feign.product.SkuDetailFeign;
 import com.atguigu.gmall.item.service.SkuDetailService;
 import com.atguigu.gmall.model.product.SkuImage;
 import com.atguigu.gmall.model.product.SkuInfo;
@@ -49,7 +49,8 @@ public class SkuDetailServiceImpl implements SkuDetailService {
     @GmallCache(cacheKey = SysRedisConstant.SKU_INFO_PREFIX + "#{#params[0]}",
                 bloomName = SysRedisConstant.BlOOM_SKUID,
                 bloomValue = "#{#params[0]}",
-                lockName = SysRedisConstant.LOCK_SKU_DETAILS +  "#{#params[0]}"
+                lockName = SysRedisConstant.LOCK_SKU_DETAILS +  "#{#params[0]}",
+                ttl = 60*60*24*7
     )
     @Override
     public SkuDetailsTo getSkuDetailsTo(Long skuId) {

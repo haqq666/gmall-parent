@@ -1,8 +1,8 @@
 package com.atguigu.gmall.web.controller;
 
 import com.atguigu.gmall.common.result.Result;
+import com.atguigu.gmall.feign.item.ItemFeignClient;
 import com.atguigu.gmall.model.to.SkuDetailsTo;
-import com.atguigu.gmall.web.feign.ItemFeignClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

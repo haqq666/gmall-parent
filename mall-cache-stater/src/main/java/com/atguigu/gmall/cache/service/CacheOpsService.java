@@ -29,9 +29,13 @@ public interface CacheOpsService {
 
     void saveCacheData(String key, Object obj);
 
+    void saveCacheData(String key, Object obj,Long ttl);
+
     void unlock(Long skuId);
 
     Boolean tryLock(String lockName);
 
     void unlock(String lockName);
+
+    void delay2delete(String cacheKey);
 }
