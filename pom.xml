@@ -13,6 +13,7 @@
         <module>model</module>
         <module>service</module>
         <module>service-gateway</module>
+        <module>mall-cache-stater</module>
     </modules>
 
     <parent>

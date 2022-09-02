@@ -1,4 +1,4 @@
-package com.atguigu.gmall.common.constant;
+package com.atguigu.gmall.cache.constant;
 
 /**
  * @author HaQQ
@@ -13,5 +13,5 @@ public class SysRedisConstant {
     public static final long SKUDETAILS_VAL_TTL = 60 * 60 * 24 * 7; //7天
     public static final String SKU_INFO_PREFIX = "sku:Info:";
     public static  final String BlOOM_SKUID = "bloom:skuId:";
-    public static final String CATEGORY_KEY = "category";
+    public static final String LOCK_PREFIX = "lock";
 }

@@ -1,5 +1,7 @@
 package com.atguigu.gmall.product.service.impl;
 
+import com.atguigu.gmall.cache.annontation.GmallCache;
+import com.atguigu.gmall.common.constant.SysRedisConstant;
 import com.atguigu.gmall.model.product.BaseCategory3;
 import com.atguigu.gmall.model.to.CategoryTreeTo;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -33,6 +35,7 @@ public class BaseCategory3ServiceImpl extends ServiceImpl<BaseCategory3Mapper, B
         return list;
     }
 
+    @GmallCache(cacheKey = SysRedisConstant.CATEGORY_KEY)
     @Override
     public List<CategoryTreeTo> getCategoryTreeTo() {
 

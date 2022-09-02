@@ -6,6 +6,7 @@ import com.atguigu.gmall.common.config.ThreadPool.ThreadPoolAutoConfiguration;
 import org.springframework.boot.SpringApplication;
 import org.springframework.cloud.client.SpringCloudApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Import;
 
 /**
@@ -13,7 +14,6 @@ import org.springframework.context.annotation.Import;
  * @version 1.0
  * @date 2022/8/26 20:27
  */
-@Import(RedissonAutoConfiguration.class)
 @EnableThreadPool
 @EnableFeignClients
 @SpringCloudApplication

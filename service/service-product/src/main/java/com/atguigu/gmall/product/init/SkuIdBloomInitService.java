@@ -27,15 +27,18 @@ public class SkuIdBloomInitService {
 
     @PostConstruct
     public void initSkuBloom(){
+
+        RBloomFilter<Object> filter = redissonClient.getBloomFilter(SysRedisConstant.BlOOM_SKUID);
+        if (filter.isExists()){
+            log.info("布隆存在");
+           return;
+        }
         log.info("布隆初始化进行中");
+        filter.tryInit(5000000,0.00001);
         //查出商品的skuid
         List<Long> skuIds = skuInfoService.getAllSkuId();
-        RBloomFilter<Object> filter = redissonClient.getBloomFilter(SysRedisConstant.BlOOM_SKUID);
-        if (!filter.isExists()){
-           filter.tryInit(50000, 0.00001);
-        }
         for (Long skuId : skuIds) {
-         filter.add(skuId);
+            filter.add(skuId);
         }
 
         log.info("布隆初始化完成 添加了{}条数据",skuIds.size());
