@@ -16,6 +16,7 @@ import org.springframework.scheduling.annotation.Scheduled;
  * @version 1.0
  * @date 2022/8/23 17:27
  */
+@EnableFeignClients(basePackages = {"com.atguigu.gmall.feign.search"})
 @EnableScheduling
 @Import({Swagger2Config.class})
 @EnableThreadPool

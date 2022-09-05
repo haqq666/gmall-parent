@@ -1,6 +1,7 @@
 package com.atguigu.gmall.product.service;
 
 
+import com.atguigu.gmall.model.list.Goods;
 import com.atguigu.gmall.model.product.*;
 import com.atguigu.gmall.model.to.CategoryTreeTo;
 import com.atguigu.gmall.model.to.CategoryViewTo;
@@ -38,5 +39,7 @@ public interface SkuInfoService extends IService<SkuInfo> {
     List<SkuImage> getSkuInfoImageList(Long skuId);
 
     List<Long> getAllSkuId();
+
+    Goods getGoodsBySkuId(Long skuId);
 
 }
