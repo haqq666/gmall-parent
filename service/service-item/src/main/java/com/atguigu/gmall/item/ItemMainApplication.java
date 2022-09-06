@@ -15,7 +15,7 @@ import org.springframework.context.annotation.Import;
  * @date 2022/8/26 20:27
  */
 @EnableThreadPool
-@EnableFeignClients(basePackages = {"com.atguigu.gmall.feign.product"})
+@EnableFeignClients(basePackages = {"com.atguigu.gmall.feign.product","com.atguigu.gmall.feign.search"})
 @SpringCloudApplication
 public class ItemMainApplication {
     public static void main(String[] args) {

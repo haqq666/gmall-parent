@@ -1,13 +1,9 @@
 package com.atguigu.gmall.search.service.impl;
 
-import com.atguigu.gmall.model.list.SearchAttr;
-import com.google.common.collect.Lists;
-import com.atguigu.gmall.model.vo.search.OrderMapVo;
-
 import com.atguigu.gmall.common.constant.SysRedisConstant;
 import com.atguigu.gmall.model.list.Goods;
-import com.atguigu.gmall.model.vo.search.SearchParamVo;
-import com.atguigu.gmall.model.vo.search.SearchResponseVo;
+import com.atguigu.gmall.model.list.SearchAttr;
+import com.atguigu.gmall.model.vo.search.*;
 import com.atguigu.gmall.search.repository.GoodsRepository;
 import com.atguigu.gmall.search.service.GoodsService;
 import org.apache.commons.lang.StringUtils;
@@ -15,6 +11,13 @@ import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.NestedQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.bucket.nested.NestedAggregationBuilder;
+import org.elasticsearch.search.aggregations.bucket.nested.ParsedNested;
+import org.elasticsearch.search.aggregations.bucket.terms.ParsedLongTerms;
+import org.elasticsearch.search.aggregations.bucket.terms.ParsedStringTerms;
+import org.elasticsearch.search.aggregations.bucket.terms.Terms;
+import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -25,10 +28,9 @@ import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.data.elasticsearch.core.query.HighlightQuery;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
-import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.data.elasticsearch.core.query.Query;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +47,8 @@ public class GoodsServiceImpl implements GoodsService {
     GoodsRepository goodsRepository;
     @Autowired
     ElasticsearchRestTemplate restTemplate;
+    @Autowired
+    StringRedisTemplate redisTemplate;
 
     @Override
     public void saveGoods(Goods goods) {
@@ -68,6 +72,13 @@ public class GoodsServiceImpl implements GoodsService {
         return searchResponseVo;
     }
 
+    @Override
+    public void updateHotScore(Long skuId, Long score) {
+        Goods goods = goodsRepository.findById(skuId).get();
+        goods.setHotScore(score);
+        goodsRepository.save(goods);
+    }
+
     private SearchResponseVo buildSearchResponseVoResult(SearchHits<Goods> goods, SearchParamVo searchParamVo) {
 
         SearchResponseVo searchResponseVo = new SearchResponseVo();
@@ -78,7 +89,7 @@ public class GoodsServiceImpl implements GoodsService {
             searchResponseVo.setTrademarkParam("品牌："
                     + searchParamVo.getTrademark().split(":")[1]);
         }
-
+//peops=1：aaa:bbb&
         if (searchParamVo.getProps() != null && searchParamVo.getProps().size() > 0) {
             List<SearchAttr> propsParamsList = new ArrayList<>();
             for (String prop : searchParamVo.getProps()) {
@@ -91,10 +102,13 @@ public class GoodsServiceImpl implements GoodsService {
             }
             searchResponseVo.setPropsParamList(propsParamsList);
         }
-        //TODO 聚合分析品牌列表
-        searchResponseVo.setTrademarkList(Lists.newArrayList());
+        //聚合分析品牌列表
+        List<TrademarkVo> trademarkVos = buildTrademarkList(goods);
+        searchResponseVo.setTrademarkList(trademarkVos);
+
         //TODO 聚合分析属性列表
-        searchResponseVo.setAttrsList(Lists.newArrayList());
+        List<AttrVo> attrVoList = buildAttrList(goods);
+        searchResponseVo.setAttrsList(attrVoList);
 
         if (!StringUtils.isEmpty(searchParamVo.getOrder())) {
             String order = searchParamVo.getOrder();
@@ -130,6 +144,57 @@ public class GoodsServiceImpl implements GoodsService {
 
 
         return searchResponseVo;
+    }
+
+    private List<AttrVo> buildAttrList(SearchHits<Goods> goods) {
+        List<AttrVo> attrVoList = new ArrayList<>();
+        ParsedNested attrAgg = goods.getAggregations().get("attrAgg");
+
+        ParsedLongTerms attrIdAgg = attrAgg.getAggregations().get("attrIdAgg");
+        for (Terms.Bucket bucket : attrIdAgg.getBuckets()) {
+            AttrVo attrVo = new AttrVo();
+            long attrId = bucket.getKeyAsNumber().longValue();
+            attrVo.setAttrId(attrId);
+
+            ParsedStringTerms attrNameAgg = bucket.getAggregations().get("attrNameAgg");
+            String attrName = attrNameAgg.getBuckets().get(0).getKeyAsString();
+            attrVo.setAttrName(attrName);
+
+            ParsedStringTerms attrValueAgg = bucket.getAggregations().get("attrValueAgg");
+            List<String> attrValueList = new ArrayList<>();
+            for (Terms.Bucket attrValueBucket : attrValueAgg.getBuckets()) {
+                String attrValue = attrValueBucket.getKeyAsString();
+                attrValueList.add(attrValue);
+            }
+            attrVo.setAttrValueList(attrValueList);
+
+            attrVoList.add(attrVo);
+        }
+
+        return attrVoList;
+    }
+
+    private List<TrademarkVo> buildTrademarkList(SearchHits<Goods> goods) {
+        List<TrademarkVo> trademarkVoList = new ArrayList<>();
+
+        ParsedLongTerms tmIdAgg = goods.getAggregations().get("tmIdAgg");
+        for (Terms.Bucket bucket : tmIdAgg.getBuckets()) {
+            TrademarkVo trademarkVo = new TrademarkVo();
+
+            Long tmId = bucket.getKeyAsNumber().longValue();
+            trademarkVo.setTmId(tmId);
+
+            ParsedStringTerms tmNameAgg = bucket.getAggregations().get("tmNameAgg");
+            String tmName = tmNameAgg.getBuckets().get(0).getKeyAsString();
+            trademarkVo.setTmName(tmName);
+
+            ParsedStringTerms tmLogoAgg = bucket.getAggregations().get("tmLogoAgg");
+            String tmLogoUrl = tmLogoAgg.getBuckets().get(0).getKeyAsString();
+            trademarkVo.setTmLogoUrl(tmLogoUrl);
+
+            trademarkVoList.add(trademarkVo);
+        }
+        return trademarkVoList;
     }
 
     private String makeUrlParam(SearchParamVo searchParamVo) {
@@ -261,8 +326,28 @@ public class GoodsServiceImpl implements GoodsService {
             query.setHighlightQuery(highlightQuery);
         }
 
-        //TODO 平台属性
+        //品牌聚合
+        TermsAggregationBuilder tmIdAgg = AggregationBuilders
+                .terms("tmIdAgg").field("tmId").size(1000);
+        TermsAggregationBuilder tmNameAgg = AggregationBuilders.terms("tmNameAgg").field("tmName").size(1);
+        tmIdAgg.subAggregation(tmNameAgg);
+        TermsAggregationBuilder tmLogoAgg = AggregationBuilders.terms("tmLogoAgg").field("tmLogoUrl").size(1);
+        tmIdAgg.subAggregation(tmLogoAgg);
+        query.addAggregation(tmIdAgg);
 
+        //属性聚合
+        NestedAggregationBuilder attrAgg = AggregationBuilders.nested("attrAgg", "attrs");
+        TermsAggregationBuilder attrIdAgg = AggregationBuilders.terms("attrIdAgg").field("attrs.attrId").size(100);
+
+
+        TermsAggregationBuilder attrNameAgg = AggregationBuilders .terms("attrNameAgg").field("attrs.attrName").size(1);
+        attrIdAgg.subAggregation(attrNameAgg);
+        TermsAggregationBuilder attrValueAgg = AggregationBuilders.terms("attrValueAgg").field("attrs.attrValue").size(100);
+        attrIdAgg.subAggregation(attrValueAgg);
+
+        attrAgg.subAggregation(attrIdAgg);
+
+        query.addAggregation(attrAgg);
 
         return query;
     }

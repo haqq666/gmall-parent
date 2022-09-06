@@ -15,4 +15,6 @@ public class SysRedisConstant {
     public static  final String BlOOM_SKUID = "bloom:skuId:";
     public static final String CATEGORY_KEY = "category";
     public static final int PAGESIZE = 10;
+    public static final String SKU_HOTSCORE_PREFIX = "sku:hotscore:";
+    public static final String LOGIN_USER_TOKEN = "login:user:token:";
 }

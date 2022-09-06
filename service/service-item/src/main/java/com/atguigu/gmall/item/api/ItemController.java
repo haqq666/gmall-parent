@@ -14,11 +14,22 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("api/inner/rpc/item")
 public class ItemController {
+
     @Autowired
     SkuDetailService skuDetailService;
+
+    /**
+     * 查询商品详情
+     * @param skuId
+     * @return
+     */
     @GetMapping("{skuId}")
     public Result<SkuDetailsTo> skuDetailsTo(@PathVariable("skuId")Long skuId){
+        //获取商品详情
         SkuDetailsTo skuDetailsTo = skuDetailService.getSkuDetailsTo(skuId);
+        //更新热度分
+        skuDetailService.updateHotScore(skuId);
+
         return Result.ok(skuDetailsTo);
     }
 

@@ -19,6 +19,7 @@ import com.atguigu.gmall.product.mapper.SkuInfoMapper;
 import org.redisson.api.RBloomFilter;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -56,6 +57,8 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo>
     BaseCategory1Service baseCategory1Service;
     @Autowired
     SearchFeignClient searchFeignClient;
+    @Autowired
+    StringRedisTemplate stringRedisTemplate;
 
 
     @Override
@@ -97,7 +100,7 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo>
     @Override
     public void cancelSale(Long skuId) {
         skuInfoMapper.UpdateIsSale(skuId,0); //1: 上架 0: 下架
-        // TODO: es删除
+        // es删除
         searchFeignClient.deleteGoods(skuId);
     }
 
@@ -225,7 +228,10 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo>
         goods.setCategory3Name(baseCategory3.getName());
 
         //TODO 热度查询
+        
         goods.setHotScore(0L);
+
+
         List<SearchAttr> attrs = skuAttrValueService.getAttrValueAndNAme(skuId);
         goods.setAttrs(attrs);
 

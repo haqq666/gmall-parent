@@ -36,8 +36,14 @@ public class SearchApiController {
 
     @PostMapping("/search")
     public Result<SearchResponseVo> search(@RequestBody SearchParamVo searchParamVo){
-        // TODO
         SearchResponseVo searchResponseVo = goodsService.search(searchParamVo);
         return Result.ok(searchResponseVo);
+    }
+
+    @GetMapping("/goods/hotscore/{skuId}")
+    public Result updateHotScore(@PathVariable("skuId")Long skuId,
+                                 @RequestParam("score")Long score){
+        goodsService.updateHotScore(skuId,score);
+        return Result.ok();
     }
 }
