@@ -59,6 +59,12 @@
             <optional>true</optional>
         </dependency>
 
+        <dependency>
+            <groupId>com.atguigu.gmall</groupId>
+            <artifactId>model</artifactId>
+            <version>1.0</version>
+        </dependency>
+
     </dependencies>
 
 

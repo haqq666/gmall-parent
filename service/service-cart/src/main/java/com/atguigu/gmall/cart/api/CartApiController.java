@@ -1,9 +1,17 @@
 package com.atguigu.gmall.cart.api;
 
+import com.atguigu.gmall.cart.service.CartService;
+import com.atguigu.gmall.common.auth.AuthUtils;
 import com.atguigu.gmall.common.result.Result;
+import com.atguigu.gmall.model.cart.CartInfo;
 import com.atguigu.gmall.model.product.SkuInfo;
+import com.atguigu.gmall.model.vo.user.UserAuthInfo;
+import jdk.internal.dynalink.linker.LinkerServices;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * @author HaQQ
@@ -14,12 +22,15 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 public class CartApiController {
 
+    @Autowired
+    CartService cartService;
+
     @GetMapping("/addCart")
-    public Result<SkuInfo> addCarthtml(@RequestParam("skuId")Long skuId,
-                                       @RequestParam("skuNum")Integer skuNum,
-                                       @RequestHeader(value = "userId",required = false)Long userId){
-        System.out.println("service-cart: 用户的Id为" + userId);
-        return Result.ok();
+    public Result<Object> addCarthtml(@RequestParam("skuId") Long skuId,
+                                       @RequestParam("skuNum") Integer skuNum) {
+        SkuInfo skuInfo = cartService.addCarthtml(skuId,skuNum);
+
+         return Result.ok(skuInfo);
 
     }
 

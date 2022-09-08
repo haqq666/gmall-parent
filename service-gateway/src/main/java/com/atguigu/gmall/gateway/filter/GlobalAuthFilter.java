@@ -48,7 +48,7 @@ public class GlobalAuthFilter implements GlobalFilter {
         String path = exchange.getRequest().getURI().getPath();
         log.info("{} 请求开始", path);
         String uri = exchange.getRequest().getPath().toString();
-        log.info("uri --- {} 请求开始",uri);
+        log.info("uri --- {} 请求开始", uri);
 
         //静态资源直接访问
         for (String url : authUrlProperties.getNoAuthUrl()) {
@@ -86,34 +86,63 @@ public class GlobalAuthFilter implements GlobalFilter {
             }
         }
 
+
         //普通请求 若携带token 检验token //若未携带token就放行
         String tokenValue = getTokenValue(exchange);
         UserInfo userInfo = getTokenUserInfo(tokenValue);
-        if (userInfo != null){
-            ServerWebExchange webExchange = userIdTransport(userInfo, exchange);
-            return chain.filter(webExchange);
-        }else {
-            if (!StringUtils.isEmpty(tokenValue)){
-                return redirectToCustomPage(authUrlProperties.getLoginPage() + "?originUrl=" + uri, exchange);
-            }
+
+        if (tokenValue != null && userInfo == null){
+            return redirectToCustomPage(authUrlProperties.getLoginPage() + "?originUrl=" + uri, exchange);
         }
 
+        exchange = userIdTransport(userInfo, exchange);
 
+        //deleteUserInfo(exchange);
         return chain.filter(exchange);
     }
 
+    //清除userInfo
+    private Mono<Void> deleteUserInfo(ServerWebExchange exchange) {
+        ServerHttpResponse response = exchange.getResponse();
+        String path = exchange.getRequest().getPath().toString();
+        response.setStatusCode(HttpStatus.FOUND);
+        response.getHeaders().add(HttpHeaders.LOCATION, path);
+
+        //清除老cookie
+        ResponseCookie cookie = ResponseCookie.from("userInfo", "777")
+                .maxAge(0)
+                .domain(".gmall.com")
+                .path("/")
+                .build();
+        response.getCookies().set("userInfo", cookie);
+
+        return response.setComplete();
+    }
+
     private ServerWebExchange userIdTransport(UserInfo userInfo, ServerWebExchange exchange) {
+        String userTempId = getUserTempId(exchange);
+        ServerHttpRequest request = exchange.getRequest();
+        ServerHttpRequest.Builder mutate = request.mutate();
+
         if (userInfo != null) {
-            ServerHttpRequest request = exchange.getRequest()
-                    .mutate()
-                    .header(SysRedisConstant.USER_HANDER, userInfo.getId().toString())
-                    .build();
+            mutate.header(SysRedisConstant.USER_HANDER, userInfo.getId().toString()).build();
+        }
+        if (!StringUtils.isEmpty(userTempId)){
+            mutate.header(SysRedisConstant.USER_TEMP_HANDER,userTempId).build();
+        }
             return exchange.mutate()
                     .request(request)
                     .response(exchange.getResponse())
                     .build();
+    }
+
+    private String getUserTempId(ServerWebExchange exchange) {
+        HttpCookie cookieToken = exchange.getRequest().getCookies().getFirst(SysRedisConstant.USER_TEMP_HANDER);
+        if (cookieToken != null) {
+            return cookieToken.getValue();
         }
-        return exchange;
+        //存在token中
+        return exchange.getRequest().getHeaders().getFirst(SysRedisConstant.USER_TEMP_HANDER);
     }
 
     private Mono<Void> redirectToCustomPage(String location, ServerWebExchange exchange) {
@@ -128,6 +157,13 @@ public class GlobalAuthFilter implements GlobalFilter {
                 .path("/")
                 .build();
         response.getCookies().set("token", cookie);
+
+        cookie = ResponseCookie.from("userInfo", "777")
+                .maxAge(0)
+                .domain(".gmall.com")
+                .path("/")
+                .build();
+        response.getCookies().set("userInfo", cookie);
 
         return response.setComplete();
     }

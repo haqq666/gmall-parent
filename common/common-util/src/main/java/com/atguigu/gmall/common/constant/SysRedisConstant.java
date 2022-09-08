@@ -18,4 +18,7 @@ public class SysRedisConstant {
     public static final String SKU_HOTSCORE_PREFIX = "sku:hotscore:";
     public static final String LOGIN_USER_TOKEN = "login:user:token:";
     public static final String USER_HANDER = "userId";
+    public static final String USER_TEMP_HANDER = "userTempId";
+    public static final String CART_KEY = "cart:key:";
+    public static final long MAX_CART_NUMBER = 2;
 }
