@@ -41,7 +41,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo>
         String encrypt = MD5.encrypt(userInfo.getPasswd());
 
         LambdaUpdateWrapper<UserInfo> wrapper = new LambdaUpdateWrapper<>();
-        wrapper.eq(UserInfo::getName,userInfo.getLoginName())
+        wrapper.eq(UserInfo::getLoginName,userInfo.getLoginName())
                 .eq(UserInfo::getPasswd,encrypt);
         UserInfo info = userInfoMapper.selectOne(wrapper);
 

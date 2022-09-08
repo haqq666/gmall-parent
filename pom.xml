@@ -14,7 +14,6 @@
         <module>service</module>
         <module>service-gateway</module>
         <module>mall-cache-stater</module>
-        <module>feign-client</module>
     </modules>
 
     <parent>

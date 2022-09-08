@@ -12,10 +12,11 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 @EnableFeignClients(basePackages = {
         "com.atguigu.gmall.feign.product",
         "com.atguigu.gmall.feign.item",
-        "com.atguigu.gmall.feign.search"})
+        "com.atguigu.gmall.feign.search",
+        "com.atguigu.gmall.feign.cart"})
 @SpringCloudApplication
 public class WebAllMainApplication {
     public static void main(String[] args) {
-        SpringApplication.run(WebAllMainApplication.class,args);
+        SpringApplication.run(WebAllMainApplication.class, args);
     }
 }
