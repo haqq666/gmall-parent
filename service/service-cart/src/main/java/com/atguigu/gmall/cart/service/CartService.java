@@ -30,4 +30,8 @@ public interface CartService {
 
     void MergeTempCartAndUserCart();
 
+    void deleteChecked(String cartKey);
+
+    void updateCartPrice(String cartKey, List<CartInfo> cartInfos);
+
 }

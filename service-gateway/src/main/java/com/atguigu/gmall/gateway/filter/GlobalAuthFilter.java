@@ -95,9 +95,11 @@ public class GlobalAuthFilter implements GlobalFilter {
             return redirectToCustomPage(authUrlProperties.getLoginPage() + "?originUrl=" + uri, exchange);
         }
 
-        exchange = userIdTransport(userInfo, exchange);
+        if (StringUtils.isEmpty(tokenValue)) {
+             deleteUserInfo(exchange);
+        }
 
-        //deleteUserInfo(exchange);
+        exchange = userIdTransport(userInfo, exchange);
         return chain.filter(exchange);
     }
 
@@ -116,7 +118,9 @@ public class GlobalAuthFilter implements GlobalFilter {
                 .build();
         response.getCookies().set("userInfo", cookie);
 
-        return response.setComplete();
+        String cookieStr = Jsons.toStr(cookie);
+        DataBuffer buffer = response.bufferFactory().wrap(cookieStr.getBytes(StandardCharsets.UTF_8));
+        return response.writeWith(Mono.just(buffer));
     }
 
     private ServerWebExchange userIdTransport(UserInfo userInfo, ServerWebExchange exchange) {

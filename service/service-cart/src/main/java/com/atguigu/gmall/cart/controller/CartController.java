@@ -28,7 +28,6 @@ public class CartController {
         String cartKey = cartService.getCartKey();
 
         cartService.MergeTempCartAndUserCart();
-
         List<CartInfo> cartInfoList = cartService.getCartList(cartKey);
         return Result.ok(cartInfoList);
     }
@@ -50,9 +49,11 @@ public class CartController {
     }
 
     @DeleteMapping("deleteCart/{skuId}")
-    public Result ddelete(@PathVariable("skuId") Long skuId) {
+    public Result delete(@PathVariable("skuId") Long skuId) {
         String cartKey = cartService.getCartKey();
         cartService.delete(skuId, cartKey);
         return Result.ok();
     }
+
+
 }

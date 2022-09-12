@@ -1,22 +1,12 @@
 package com.atguigu.gmall.cart.service.impl;
 
-import java.math.BigDecimal;
-
+import com.atguigu.gmall.cart.service.CartService;
+import com.atguigu.gmall.common.auth.AuthUtils;
+import com.atguigu.gmall.common.constant.SysRedisConstant;
 import com.atguigu.gmall.common.execption.GmallException;
 import com.atguigu.gmall.common.result.Result;
 import com.atguigu.gmall.common.result.ResultCodeEnum;
 import com.atguigu.gmall.common.util.Jsons;
-import com.google.common.collect.Lists;
-
-import java.sql.Timestamp;
-import java.util.Date;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
-import com.atguigu.gmall.cart.service.CartService;
-import com.atguigu.gmall.common.auth.AuthUtils;
-import com.atguigu.gmall.common.constant.SysRedisConstant;
 import com.atguigu.gmall.feign.product.SkuDetailFeign;
 import com.atguigu.gmall.model.cart.CartInfo;
 import com.atguigu.gmall.model.product.SkuInfo;
@@ -26,8 +16,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.BoundHashOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
 
-import javax.xml.crypto.Data;
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * @author HaQQ
@@ -41,6 +38,8 @@ public class CartServiceImpl implements CartService {
     SkuDetailFeign productFeign;
     @Autowired
     StringRedisTemplate redisTemplate;
+    @Autowired
+    ThreadPoolExecutor executor;
 
     @Override
     public SkuInfo addCarthtml(Long skuId, Integer skuNum) {
@@ -69,7 +68,7 @@ public class CartServiceImpl implements CartService {
             //调用product方法，获取用商品信息
             SkuInfo skuInfo = productFeign.getSkuDetailToInfo(skuId).getData();
             //将商品信息转化成cartInfo
-            CartInfo cartInfo = converCartInfo2SkuInfo(skuInfo);
+            CartInfo cartInfo = converSkuInfo2CartInfo(skuInfo);
             cartInfo.setSkuNum(skuNum);
             //保存在redis中
             cart.put(skuId.toString(), Jsons.toStr(cartInfo));
@@ -85,11 +84,11 @@ public class CartServiceImpl implements CartService {
             //更新redis信息
             cart.put(skuId.toString(),Jsons.toStr(cartItem));
             //转化成skuIf
-           return converSkuInfo2CartInfo(cartItem);
+           return converCartInfo2SkuInfo(cartItem);
         }
     }
 
-    private SkuInfo converSkuInfo2CartInfo(CartInfo cartItem) {
+    private SkuInfo converCartInfo2SkuInfo(CartInfo cartItem) {
         SkuInfo skuInfo = new SkuInfo();
 
         skuInfo.setPrice(cartItem.getCartPrice());
@@ -117,6 +116,15 @@ public class CartServiceImpl implements CartService {
                 .map(itemStr -> Jsons.toObj(itemStr, CartInfo.class))
                 .sorted((o1, o2) -> o2.getCreateTime().compareTo(o1.getCreateTime()))
                 .collect(Collectors.toList());
+
+        RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
+        executor.submit(()->{
+            RequestContextHolder.setRequestAttributes(requestAttributes);
+            updateCartPrice(cartKey,cartInfos);
+            RequestContextHolder.resetRequestAttributes();
+        });
+
+    //    updateCartPrice(cartKey,cartInfos);
 
         return cartInfos;
     }
@@ -167,14 +175,35 @@ public class CartServiceImpl implements CartService {
                 }
             }
         }
-
-
-
-
-
-
-
     }
+
+    @Override
+    public void deleteChecked(String cartKey) {
+        //查找购物车
+        BoundHashOperations<String, String, String> cart = redisTemplate.boundHashOps(cartKey);
+
+        List<Long> cartKIds = cart.values().stream()
+                .map(itemStr -> Jsons.toObj(itemStr, CartInfo.class))
+                .filter(item -> item.getIsChecked() == 1)
+                .map(CartInfo::getSkuId)
+                .collect(Collectors.toList());
+
+        if (cartKIds != null && cartKIds.size() > 0){
+            cartKIds.stream().forEach(cartKId -> delete(cartKId,cartKey));
+        }
+    }
+
+    @Override
+    public void updateCartPrice(String cartKey, List<CartInfo> cartInfos) {
+        BoundHashOperations<String, String, String> cart = redisTemplate.boundHashOps(cartKey);
+        cartInfos.forEach(info -> {
+            Result<BigDecimal> price = productFeign.getSkuDetailTo1010price(info.getSkuId());
+            info.setSkuPrice(price.getData());
+            info.setUpdateTime(new Date());
+            cart.put(info.getSkuId().toString(),Jsons.toStr(info));
+        });
+    }
+
 
     /**
      * 将skuInfo转化成为cartInfo
@@ -182,18 +211,18 @@ public class CartServiceImpl implements CartService {
      * @param skuInfo
      * @return
      */
-    private CartInfo converCartInfo2SkuInfo(SkuInfo skuInfo) {
+    private CartInfo converSkuInfo2CartInfo(SkuInfo skuInfo) {
 
         CartInfo cartInfo = new CartInfo();
 
         cartInfo.setSkuId(skuInfo.getId());
-        cartInfo.setCartPrice(skuInfo.getPrice());
         cartInfo.setImgUrl(skuInfo.getSkuDefaultImg());
         cartInfo.setSkuName(skuInfo.getSkuName());
         cartInfo.setIsChecked(1);
         cartInfo.setCreateTime(new Date());
         cartInfo.setUpdateTime(new Date());
         cartInfo.setSkuPrice(skuInfo.getPrice());
+        cartInfo.setCartPrice(skuInfo.getPrice());
 
         return cartInfo;
     }

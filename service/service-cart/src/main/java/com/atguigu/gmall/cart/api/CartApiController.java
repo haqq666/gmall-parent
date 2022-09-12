@@ -34,4 +34,11 @@ public class CartApiController {
 
     }
 
+    @GetMapping("/cart/deleteChecked")
+    public Result deleteChecked(){
+        String cartKey = cartService.getCartKey();
+        cartService.deleteChecked(cartKey);
+        return Result.ok();
+    }
+
 }

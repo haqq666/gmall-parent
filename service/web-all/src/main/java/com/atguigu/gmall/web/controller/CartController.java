@@ -35,7 +35,7 @@ public class CartController {
             model.addAttribute("skuNum",skuNum);
             return "cart/addCart";
         }else {
-            model.addAttribute("msg",result.getMessage());
+            model.addAttribute("msg",result.getData());
             return "cart/error";
         }
 
@@ -45,6 +45,14 @@ public class CartController {
     public String toCart(){
 
         return "cart/index";
+    }
+
+    @GetMapping("/cart/deleteChecked")
+    public String deleteChecked(){
+
+        cartFeignClient.deleteChecked();
+
+        return "redirect:http://cart.gmall.com/cart.html";
     }
 
 }

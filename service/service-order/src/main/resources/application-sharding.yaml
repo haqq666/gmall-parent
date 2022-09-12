@@ -1,0 +1,150 @@
+spring:
+  shardingsphere:
+    props:
+      sql-show: true
+    datasource:
+      names: order_0_m,order_1_m,order_0_s1,order_0_s2,order_1_s1,order_1_s2
+
+      order_0_m:
+        type: com.zaxxer.hikari.HikariDataSource
+        driverClassName: com.mysql.jdbc.Driver
+        jdbcUrl: jdbc:mysql://192.168.200.100:3306/gmall_order_0?useSSL=false&characterEncoding=utf-8
+        username: root
+        password: 123456
+
+      order_0_s1:
+        type: com.zaxxer.hikari.HikariDataSource
+        driverClassName: com.mysql.jdbc.Driver
+        jdbcUrl: jdbc:mysql://192.168.200.100:3307/gmall_order_0?useSSL=false&characterEncoding=utf-8
+        username: root
+        password: 123456
+
+      order_0_s2:
+        type: com.zaxxer.hikari.HikariDataSource
+        driverClassName: com.mysql.jdbc.Driver
+        jdbcUrl: jdbc:mysql://192.168.200.100:3308/gmall_order_0?useSSL=false&characterEncoding=utf-8
+        username: root
+        password: 123456
+
+
+      order_1_m:
+        type: com.zaxxer.hikari.HikariDataSource
+        driverClassName: com.mysql.jdbc.Driver
+        jdbcUrl: jdbc:mysql://192.168.200.100:3306/gmall_order_0?useSSL=false&characterEncoding=utf-8
+        username: root
+        password: 123456
+
+      order_1_s1:
+        type: com.zaxxer.hikari.HikariDataSource
+        driverClassName: com.mysql.jdbc.Driver
+        jdbcUrl: jdbc:mysql://192.168.200.100:3307/gmall_order_0?useSSL=false&characterEncoding=utf-8
+        username: root
+        password: 123456
+
+      order_1_s2:
+        type: com.zaxxer.hikari.HikariDataSource
+        driverClassName: com.mysql.jdbc.Driver
+        jdbcUrl: jdbc:mysql://192.168.200.100:3308/gmall_order_0?useSSL=false&characterEncoding=utf-8
+        username: root
+        password: 123456
+
+    rules:
+      readwrite-splitting:
+        data-sources:
+          order0ds:
+            type: Static
+            props:
+              write-data-source-name: order_0_m
+              read-data-source-names: order_0_s1,order_0_s2
+            load-balance-name: haha
+
+          order1ds:
+            type: Static
+            props:
+              write-data-source-name: order_0_m
+              read-data-source-names: order_0_s1,order_0_s2
+            load-balance-name: haha
+
+        load-balancers:
+          haha:
+            type: ROUND_ROBIN
+
+      sharding:
+        default-database-strategy:
+          standard:
+            sharding-column: user_id
+            sharding-algorithm-name: user_id_mod2
+
+        binding-tables:
+          - order_info,order_detail
+          - order_info,order_status_log
+
+        tables:
+          order_info:
+            actual-data-nodes: order$->{0..1}ds.order_info_$->{0..2}
+            table-strategy:
+              standard:
+                sharding-column: user_id
+                sharding-algorithm-name: user_id_mod3_oi
+            key-generate-strategy:
+              column: id
+              key-generator-name: xuehua
+
+          order_detail:
+            actual-data-nodes: order$->{0..1}ds.order_detail_$->{0..2}
+            table-strategy:
+              standard:
+                sharding-column: user_id
+                sharding-algorithm-name: user_id_mod3_od
+            key-generate-strategy:
+              column: id
+              key-generator-name: xuehua
+
+          order_status_log:
+            actual-data-nodes: order$->{0..1}ds.order_status_log_$->{0..2}
+            table-strategy:
+              standard:
+                sharding-column: user_id
+                sharding-algorithm-name: user_id_mod3_os
+
+          payment_info:
+            actual-data-nodes: order$->{0..1}ds.payment_info_$->{0..2}
+            table-strategy:
+              standard:
+                sharding-column: user_id
+                sharding-algorithm-name: user_id_mod3_pi
+
+
+        sharding-algorithms:
+
+          user_id_mod2:
+            type: INLINE
+            props:
+              algorithm-expression: order$->{user_id % 2}ds
+
+          user_id_mod3_oi:
+            type: INLINE
+            props:
+              algorithm-expression: order_info_$->{user_id % 3}
+
+          user_id_mod3_od:
+            type: INLINE
+            props:
+              algorithm-expression: order_detail_$->{user_id % 3}
+
+          user_id_mod3_os:
+            type: INLINE
+            props: # 0,1
+              algorithm-expression: order_status_log_$->{user_id % 3}
+
+          user_id_mod3_pi:
+            type: INLINE
+            props: # 0,1
+              algorithm-expression: payment_info_$->{user_id % 3}
+
+        key-generators:
+            xuehua:
+              type: SNOWFLAKE
+              props:
+                worker-id: ${random.int(1000)}
+

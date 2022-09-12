@@ -23,4 +23,8 @@ public interface CartFeignClient {
     Result<Object> addCarthtml(@RequestParam("skuId")Long skuId,
                                        @RequestParam("skuNum")Integer skuNum);
 
+
+    @GetMapping("/cart/deleteChecked")
+     Result deleteChecked();
+
 }
