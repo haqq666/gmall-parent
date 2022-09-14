@@ -120,7 +120,7 @@ public class CartServiceImpl implements CartService {
         RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
         executor.submit(()->{
             RequestContextHolder.setRequestAttributes(requestAttributes);
-            updateCartPrice(cartKey,cartInfos);
+            updateCartPrice(cartKey);
             RequestContextHolder.resetRequestAttributes();
         });
 
@@ -194,14 +194,29 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    public void updateCartPrice(String cartKey, List<CartInfo> cartInfos) {
+    public void updateCartPrice(String cartKey) {
         BoundHashOperations<String, String, String> cart = redisTemplate.boundHashOps(cartKey);
-        cartInfos.forEach(info -> {
-            Result<BigDecimal> price = productFeign.getSkuDetailTo1010price(info.getSkuId());
-            info.setSkuPrice(price.getData());
-            info.setUpdateTime(new Date());
-            cart.put(info.getSkuId().toString(),Jsons.toStr(info));
-        });
+       cart.values().stream()
+               .map(str -> Jsons.toObj(str,CartInfo.class))
+               .forEach(cartInfo -> {
+                   Result<BigDecimal> price = productFeign.getSkuDetailTo1010price(cartInfo.getSkuId());
+                   cartInfo.setSkuPrice(price.getData());
+                   cartInfo.setUpdateTime(new Date());
+
+                   if (cart.hasKey(cartInfo.getSkuId().toString())){
+                       cart.putIfAbsent(cartInfo.getSkuId().toString(),Jsons.toStr(cartInfo));
+                   }
+               });
+    }
+
+    @Override
+    public List<CartInfo> getChecked(String cartKey) {
+        BoundHashOperations<String, String, String> cart = redisTemplate.boundHashOps(cartKey);
+        List<String> cartList = cart.values();
+        return cartList.stream()
+                .map(cartItemStr -> Jsons.toObj(cartItemStr, CartInfo.class))
+                .filter(cartInfo -> cartInfo.getIsChecked() == 1)
+                .collect(Collectors.toList());
     }
 
 

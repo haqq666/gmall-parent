@@ -14,6 +14,7 @@
         <module>service</module>
         <module>service-gateway</module>
         <module>mall-cache-stater</module>
+        <module>ware-manage</module>
     </modules>
 
     <parent>

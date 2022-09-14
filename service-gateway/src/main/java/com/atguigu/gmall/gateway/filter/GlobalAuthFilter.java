@@ -95,7 +95,7 @@ public class GlobalAuthFilter implements GlobalFilter {
             return redirectToCustomPage(authUrlProperties.getLoginPage() + "?originUrl=" + uri, exchange);
         }
 
-        if (StringUtils.isEmpty(tokenValue)) {
+        if (StringUtils.isEmpty(tokenValue) && userInfo != null) {
              deleteUserInfo(exchange);
         }
 

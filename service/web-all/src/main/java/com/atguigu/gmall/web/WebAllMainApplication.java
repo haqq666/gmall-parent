@@ -11,10 +11,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
  * @date 2022/8/26 16:43
  */
 @EnableFeignClients(basePackages = {
-        "com.atguigu.gmall.feign.product",
-        "com.atguigu.gmall.feign.item",
-        "com.atguigu.gmall.feign.search",
-        "com.atguigu.gmall.feign.cart"})
+        "com.atguigu.gmall.feign"})
 @SpringCloudApplication
 @EnableFeignInterceptorConfiguration
 public class WebAllMainApplication {

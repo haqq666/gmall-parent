@@ -41,4 +41,11 @@ public class CartApiController {
         return Result.ok();
     }
 
+    @GetMapping("/cart/getChecked")
+    public Result<List<CartInfo>> getChecked(){
+        String cartKey = cartService.getCartKey();
+        List<CartInfo> cartInfos = cartService.getChecked(cartKey);
+        return Result.ok(cartInfos);
+    }
+
 }

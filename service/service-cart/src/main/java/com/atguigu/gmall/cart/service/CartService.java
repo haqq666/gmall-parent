@@ -32,6 +32,7 @@ public interface CartService {
 
     void deleteChecked(String cartKey);
 
-    void updateCartPrice(String cartKey, List<CartInfo> cartInfos);
+    void updateCartPrice(String cartKey);
 
+    List<CartInfo> getChecked(String cartKey);
 }

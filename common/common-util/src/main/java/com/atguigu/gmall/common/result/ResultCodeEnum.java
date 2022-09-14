@@ -32,6 +32,9 @@ public enum ResultCodeEnum {
 
     CART_OVER_FLOW(3000,"购物车商品数量超过限制,请删除一部分商品"),
     SKUNUM_OVER_FLOW(3100,"单个商品数量超过限制，单个商品数量不超过200个"),
+    TOKEN_INVAILD(4000,"页面已经过期，请刷新页面"),
+    ORDER_NO_STOCK(4001,"库存不足"),
+    ORDER_PRICE_CHANGE(4002,"商品价格发生改变")
     ;
 
 
