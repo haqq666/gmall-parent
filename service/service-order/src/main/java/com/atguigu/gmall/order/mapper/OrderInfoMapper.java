@@ -1,8 +1,13 @@
 package com.atguigu.gmall.order.mapper;
 
 
+import com.atguigu.gmall.model.enums.OrderStatus;
+import com.atguigu.gmall.model.enums.ProcessStatus;
 import com.atguigu.gmall.model.order.OrderInfo;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
 * @author 乔豆麻担
@@ -11,6 +16,11 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 * @Entity com.atguigu.gmall.order.domain.OrderInfo
 */
 public interface OrderInfoMapper extends BaseMapper<OrderInfo> {
+
+
+    void closeOrder(@Param("orderId") Long orderId, @Param("userId") Long userId, @Param("closed") OrderStatus closed, @Param("closed1") ProcessStatus closed1, @Param("expire") List<ProcessStatus> expire);
+
+
 
 }
 

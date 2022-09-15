@@ -21,7 +21,7 @@ public class IndexController {
    @Autowired
    SkuDetailFeign categoryFeignClient;
 
-   @GetMapping({"/", "/index"})
+   @GetMapping({"/", "/index","/index.html"})
    public String method(Model model){
       Result<List<CategoryTreeTo>> result = categoryFeignClient.getCategoryTreeTo();
       if (result.isOk()){

@@ -1,5 +1,6 @@
 package com.atguigu.gmall.order;
 
+import com.atguigu.gmall.annotation.EnableAppRabbit;
 import com.atguigu.gmall.common.annotation.EnableFeignInterceptorConfiguration;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
@@ -12,6 +13,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
  * @version 1.0
  * @date 2022/9/12 22:18
  */
+@EnableAppRabbit
 @EnableFeignClients(basePackages = {"com.atguigu.gmall.feign.cart",
                                 "com.atguigu.gmall.feign.product",
                                 "com.atguigu.gmall.feign.user",

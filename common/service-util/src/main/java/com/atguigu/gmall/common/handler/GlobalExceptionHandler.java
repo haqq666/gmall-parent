@@ -20,7 +20,8 @@ public class GlobalExceptionHandler {
     @ResponseBody
     public Result error(Exception e){
         e.printStackTrace();
-        return Result.fail();
+        Result<Object> fail = Result.fail();
+        return fail.message(e.getMessage());
     }
 
     /**
@@ -31,8 +32,9 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(GmallException.class)
     @ResponseBody
     public Result error(GmallException e){
-        ResultCodeEnum resultCodeEnum = e.getResultCodeEnum();
-
-        return Result.build("",resultCodeEnum);
+        Result<Object> fail = Result.fail();
+        fail.setCode(e.getCode());
+        fail.setMessage(e.getMessage());
+        return fail;
     }
 }

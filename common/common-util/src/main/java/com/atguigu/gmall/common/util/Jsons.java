@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.amqp.core.Message;
 
 import java.util.Map;
 
@@ -51,5 +52,10 @@ public class Jsons {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public static<T> T toObj(Message message, Class<T> clz){
+        String json = new String(message.getBody());
+        return toObj(json,clz);
     }
 }

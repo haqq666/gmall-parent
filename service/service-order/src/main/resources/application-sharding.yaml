@@ -30,21 +30,21 @@ spring:
       order_1_m:
         type: com.zaxxer.hikari.HikariDataSource
         driverClassName: com.mysql.jdbc.Driver
-        jdbcUrl: jdbc:mysql://192.168.200.100:3306/gmall_order_0?useSSL=false&characterEncoding=utf-8
+        jdbcUrl: jdbc:mysql://192.168.200.100:3306/gmall_order_1?useSSL=false&characterEncoding=utf-8
         username: root
         password: 123456
 
       order_1_s1:
         type: com.zaxxer.hikari.HikariDataSource
         driverClassName: com.mysql.jdbc.Driver
-        jdbcUrl: jdbc:mysql://192.168.200.100:3307/gmall_order_0?useSSL=false&characterEncoding=utf-8
+        jdbcUrl: jdbc:mysql://192.168.200.100:3307/gmall_order_1?useSSL=false&characterEncoding=utf-8
         username: root
         password: 123456
 
       order_1_s2:
         type: com.zaxxer.hikari.HikariDataSource
         driverClassName: com.mysql.jdbc.Driver
-        jdbcUrl: jdbc:mysql://192.168.200.100:3308/gmall_order_0?useSSL=false&characterEncoding=utf-8
+        jdbcUrl: jdbc:mysql://192.168.200.100:3308/gmall_order_1?useSSL=false&characterEncoding=utf-8
         username: root
         password: 123456
 
@@ -56,14 +56,14 @@ spring:
             props:
               write-data-source-name: order_0_m
               read-data-source-names: order_0_s1,order_0_s2
-            load-balance-name: haha
+            load-balancer-name: haha
 
           order1ds:
             type: Static
             props:
-              write-data-source-name: order_0_m
-              read-data-source-names: order_0_s1,order_0_s2
-            load-balance-name: haha
+              write-data-source-name: order_1_m
+              read-data-source-names: order_1_s1,order_1_s2
+            load-balancer-name: haha
 
         load-balancers:
           haha:
@@ -143,8 +143,8 @@ spring:
               algorithm-expression: payment_info_$->{user_id % 3}
 
         key-generators:
-            xuehua:
-              type: SNOWFLAKE
-              props:
-                worker-id: ${random.int(1000)}
+          xuehua:
+            type: SNOWFLAKE
+            props:
+              worker-id: ${random.int(1000)}
 

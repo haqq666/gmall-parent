@@ -9,10 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>common-util</artifactId>
-    <packaging>jar</packaging>
-    <name>common-util</name>
-    <description>common-util</description>
+    <artifactId>rabbit-util</artifactId>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
@@ -21,15 +18,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.amqp</groupId>
-            <artifactId>spring-amqp</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-amqp</artifactId>
         </dependency>
     </dependencies>
-
 
 </project>

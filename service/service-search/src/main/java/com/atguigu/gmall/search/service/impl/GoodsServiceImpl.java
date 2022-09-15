@@ -106,7 +106,7 @@ public class GoodsServiceImpl implements GoodsService {
         List<TrademarkVo> trademarkVos = buildTrademarkList(goods);
         searchResponseVo.setTrademarkList(trademarkVos);
 
-        //TODO 聚合分析属性列表
+        //聚合分析属性列表
         List<AttrVo> attrVoList = buildAttrList(goods);
         searchResponseVo.setAttrsList(attrVoList);
 

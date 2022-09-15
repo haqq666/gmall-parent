@@ -3,9 +3,13 @@ import java.math.BigDecimal;
 
 import com.atguigu.gmall.common.auth.AuthUtils;
 import com.atguigu.gmall.common.constant.SysRedisConstant;
+import com.atguigu.gmall.common.util.Jsons;
 import com.atguigu.gmall.model.enums.OrderStatus;
+import com.atguigu.gmall.model.enums.ProcessStatus;
 import com.atguigu.gmall.model.order.OrderDetail;
+import com.atguigu.gmall.model.to.mq.OrderMsg;
 import com.atguigu.gmall.order.service.OrderDetailService;
+import com.atguigu.gmall.rabbit.MQConst;
 import com.google.common.collect.Lists;
 import java.util.Date;
 import java.util.List;
@@ -18,7 +22,9 @@ import com.atguigu.gmall.model.vo.order.OrderSubmitVo;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.atguigu.gmall.order.service.OrderInfoService;
 import com.atguigu.gmall.order.mapper.OrderInfoMapper;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.amqp.RabbitTemplateConfigurer;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,6 +43,8 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     OrderInfoMapper orderInfoMapper;
     @Autowired
     OrderDetailService orderDetailService;
+    @Autowired
+    RabbitTemplate rabbitTemplate;
 
     @Transactional
     @Override
@@ -50,7 +58,18 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         List<OrderDetail> details = prepareOrderDetail(submitVo,orderInfo);
         orderDetailService.saveBatch(details);
 
+        //给mq发消息，45分钟后改变订单状态
+        OrderMsg orderMsg = new OrderMsg(orderInfo.getUserId(),orderInfo.getId());
+        rabbitTemplate.convertAndSend(MQConst.EXCHANGE_ORDER_EVENT,
+                MQConst.RK_ORDER_CREATED,
+                Jsons.toStr(orderMsg));
+
         return orderInfo.getId();
+    }
+
+    @Override
+    public void closeOrder(Long orderId, Long userId, OrderStatus closed, ProcessStatus closed1, List<ProcessStatus> expire) {
+        orderInfoMapper.closeOrder(orderId,userId,closed,closed1,expire);
     }
 
     private List<OrderDetail> prepareOrderDetail(OrderSubmitVo submitVo, OrderInfo orderInfo) {
@@ -115,6 +134,8 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         orderInfo.setExpireTime(new Date(System.currentTimeMillis() + 1000L * SysRedisConstant.ORDER_CLOSE_TTL));
 
         orderInfo.setOrderStatus(OrderStatus.UNPAID.name());
+
+        orderInfo.setProcessStatus(ProcessStatus.UNPAID.name());
 
         orderInfo.setTrackingNo("");
 

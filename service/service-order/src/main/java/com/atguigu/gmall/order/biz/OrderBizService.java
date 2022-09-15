@@ -13,4 +13,6 @@ public interface OrderBizService {
     OrderConfirmDataVo getConfirmData();
 
     Long submitOrder(String tradeNo, OrderSubmitVo submitVo);
+
+    void closeOrder(Long orderId, Long userId);
 }

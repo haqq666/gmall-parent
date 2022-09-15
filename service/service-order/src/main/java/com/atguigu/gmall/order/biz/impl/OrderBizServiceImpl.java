@@ -3,6 +3,8 @@ import com.atguigu.gmall.common.execption.GmallException;
 import com.atguigu.gmall.common.result.ResultCodeEnum;
 import com.atguigu.gmall.feign.user.UserFeignClient;
 import com.atguigu.gmall.feign.ware.WareFeignClient;
+import com.atguigu.gmall.model.enums.OrderStatus;
+import com.atguigu.gmall.model.enums.ProcessStatus;
 import com.atguigu.gmall.model.user.UserAddress;
 import com.atguigu.gmall.model.vo.order.OrderSubmitVo;
 import com.atguigu.gmall.order.service.OrderInfoService;
@@ -152,6 +154,14 @@ public class OrderBizServiceImpl implements OrderBizService {
 
 
         return orderId;
+    }
+
+    @Override
+    public void closeOrder(Long orderId, Long userId) {
+        List<ProcessStatus> expire = new ArrayList<>();
+        expire.add(ProcessStatus.UNPAID);
+        expire.add(ProcessStatus.FINISHED);
+        orderInfoService.closeOrder(orderId,userId, OrderStatus.CLOSED, ProcessStatus.CLOSED,expire);
     }
 
     private Boolean checkTradeNo(String tradeNo) {
