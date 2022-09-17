@@ -24,5 +24,5 @@ public interface OrderFeignClient {
     Result<OrderConfirmDataVo> confirmData();
 
     @GetMapping("/info/{orderId}")
-    public Result<OrderInfo> getOrderInfo(@PathVariable("orderId")Long orderId);
+    Result<OrderInfo> getOrderInfo(@PathVariable("orderId")Long orderId);
 }

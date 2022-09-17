@@ -33,6 +33,11 @@ public class PayController {
             return "payment/pay";
         }
         return "payment/error";
+    }
 
+    @GetMapping("/pay/success.html")
+    public String success(){
+
+        return "payment/success";
     }
 }

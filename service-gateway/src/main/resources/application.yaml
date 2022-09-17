@@ -18,6 +18,7 @@ spring:
           uri: lb://service-product
           predicates:
             - Path=/admin/product/**
+
         - id: item_rout
           uri: lb://service-item
           predicates:
@@ -33,10 +34,16 @@ spring:
           predicates:
             - Path=/api/order/**
 
+        - id: pay-route
+          uri: lb://service-pay
+          predicates:
+            - Path=/api/payment/**
+
         - id: user-route
           uri: lb://service-user
           predicates:
             - Path=/api/user/**
+
 
         - id: web_all_route
           uri: lb://web-all

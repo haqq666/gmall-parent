@@ -1,5 +1,6 @@
 package com.atguigu.gmall.feign.ware;
 
+import com.atguigu.gmall.feign.ware.fallback.wareFeignClientFallback;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,7 +15,9 @@ import java.util.Map;
  * @version 1.0
  * @date 2022/9/13 21:19
  */
-@FeignClient(value = "ware-manage",url = "${app.ware-url:http://localhost:9001/}")
+@FeignClient(value = "ware-manage",
+             url = "${app.ware-url:http://localhost:9001/}",
+             fallback = wareFeignClientFallback.class)
 public interface WareFeignClient {
 
     @GetMapping("/hasStock")

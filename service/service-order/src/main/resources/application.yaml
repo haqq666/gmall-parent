@@ -12,7 +12,9 @@ spring:
     password: 123456
     driver-class-name: com.mysql.jdbc.Driver
 
-
+feign:
+  sentinel:
+    enabled: true
 
 
 

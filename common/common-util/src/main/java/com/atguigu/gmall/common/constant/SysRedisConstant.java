@@ -22,7 +22,7 @@ public class SysRedisConstant {
     public static final String CART_KEY = "cart:key:";
     public static final long MAX_CART_NUMBER = 200;
     public static final String ORDER_TEMP_TOKEN = "order:temp:tradeNo:";
-    public static final Integer ORDER_CLOSE_TTL = 20;
+    public static final Integer ORDER_CLOSE_TTL = 60*45;
     public static final Integer ORDER_REFUND_TTL = 60 * 60 * 24 * 30;
     public static final String MQ_RETRY = "rabbitMQ:retry:";
 }
