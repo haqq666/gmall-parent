@@ -51,6 +51,7 @@ public class PaymentController {
         if (b){
             log.info("异步通知抵达。支付成功，验签通过。数据：{}", Jsons.toStr(payParam));
             //TODO 改订单信息
+            alipayService.sendPayedMsg(payParam);
         }else {
             return "error";
         }

@@ -1,11 +1,11 @@
 package com.atguigu.gmall.order.listener;
 
-import com.alibaba.cloud.sentinel.annotation.SentinelRestTemplate;
 import com.atguigu.gmall.common.constant.SysRedisConstant;
 import com.atguigu.gmall.common.util.Jsons;
 import com.atguigu.gmall.model.to.mq.OrderMsg;
 import com.atguigu.gmall.order.biz.OrderBizService;
-import com.atguigu.gmall.rabbit.MQConst;
+import com.atguigu.gmall.constant.MQConst;
+import com.atguigu.gmall.rabbit.RabbitService;
 import com.rabbitmq.client.Channel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Message;
@@ -23,12 +23,14 @@ import java.io.IOException;
  */
 @Slf4j
 @Component
-public class MQListener {
+public class CloseOrderListener {
 
     @Autowired
     StringRedisTemplate redisTemplate;
     @Autowired
     OrderBizService orderBizService;
+    @Autowired
+    RabbitService rabbitService;
 
     @RabbitListener(queues = MQConst.QUEUE_ORDER_DEAD)
     public void closeOrderListener(Message message, Channel channel) throws IOException {
@@ -40,13 +42,12 @@ public class MQListener {
             orderBizService.closeOrder(orderMsg.getOrderId(),orderMsg.getUserId());
             channel.basicAck(deliveryTag,false);
         } catch (IOException e) {
-            Long aLong = redisTemplate.opsForValue().increment(SysRedisConstant.MQ_RETRY + "order：" + orderMsg.getOrderId());
-            if (aLong <= 10){
-                channel.basicNack(deliveryTag,true,true);
-            }else {
-                channel.basicNack(deliveryTag,true,false);
-                redisTemplate.delete(SysRedisConstant.MQ_RETRY + "order:" + orderMsg.getOrderId());
-            }
+
+            rabbitService.retryConsumMsg(
+                    deliveryTag,
+                    SysRedisConstant.MQ_RETRY + "order:" + orderMsg.getOrderId(),
+                    10L,
+                    channel);
         }
     }
 

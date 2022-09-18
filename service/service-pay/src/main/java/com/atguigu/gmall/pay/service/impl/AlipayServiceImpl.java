@@ -2,7 +2,6 @@ package com.atguigu.gmall.pay.service.impl;
 
 import com.alipay.api.AlipayApiException;
 import com.alipay.api.AlipayClient;
-import com.alipay.api.AlipayConfig;
 import com.alipay.api.internal.util.AlipaySignature;
 import com.alipay.api.request.AlipayTradePagePayRequest;
 import com.atguigu.gmall.common.execption.GmallException;
@@ -13,6 +12,8 @@ import com.atguigu.gmall.feign.order.OrderFeignClient;
 import com.atguigu.gmall.model.order.OrderInfo;
 import com.atguigu.gmall.pay.config.AliPayConfigurationProperties;
 import com.atguigu.gmall.pay.service.AlipayService;
+import com.atguigu.gmall.constant.MQConst;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -36,6 +37,9 @@ public class AlipayServiceImpl implements AlipayService {
 
     @Autowired
     OrderFeignClient orderFeignClient;
+
+    @Autowired
+    RabbitTemplate rabbitTemplate;
 
     @Override
     public String getAliPayPageHtml(Long orderId) throws AlipayApiException {
@@ -85,5 +89,14 @@ public class AlipayServiceImpl implements AlipayService {
                 properties.getSignType()); //调用SDK验证签名
 
         return signVerified;
+    }
+
+    //给订单交换机发送支付成功的消息
+    @Override
+    public void sendPayedMsg(Map<String, String> payParam) {
+        rabbitTemplate.convertAndSend(
+                MQConst.EXCHANGE_ORDER_EVENT,
+                MQConst.RK_ORDER_PAYED,
+                Jsons.toStr(payParam));
     }
 }

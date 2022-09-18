@@ -31,6 +31,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -54,7 +55,7 @@ public class OrderBizServiceImpl implements OrderBizService {
     SkuDetailFeign productFeignClient;
     @Autowired
     UserFeignClient userFeignClient;
-    @Autowired
+    @Resource
     WareFeignClient wareFeignClient;
     @Autowired
     OrderInfoService orderInfoService;
@@ -161,7 +162,10 @@ public class OrderBizServiceImpl implements OrderBizService {
         List<ProcessStatus> expire = new ArrayList<>();
         expire.add(ProcessStatus.UNPAID);
         expire.add(ProcessStatus.FINISHED);
-        orderInfoService.closeOrder(orderId,userId, OrderStatus.CLOSED, ProcessStatus.CLOSED,expire);
+        orderInfoService.changeOrderStatus(
+                orderId,userId,
+                ProcessStatus.CLOSED,
+                expire);
     }
 
     private Boolean checkTradeNo(String tradeNo) {

@@ -9,13 +9,12 @@ import com.atguigu.gmall.model.enums.ProcessStatus;
 import com.atguigu.gmall.model.order.OrderDetail;
 import com.atguigu.gmall.model.to.mq.OrderMsg;
 import com.atguigu.gmall.order.service.OrderDetailService;
-import com.atguigu.gmall.rabbit.MQConst;
-import com.google.common.collect.Lists;
+import com.atguigu.gmall.constant.MQConst;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import com.atguigu.gmall.model.activity.CouponInfo;
 
 import com.atguigu.gmall.model.order.OrderInfo;
 import com.atguigu.gmall.model.vo.order.OrderSubmitVo;
@@ -24,7 +23,6 @@ import com.atguigu.gmall.order.service.OrderInfoService;
 import com.atguigu.gmall.order.mapper.OrderInfoMapper;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.amqp.RabbitTemplateConfigurer;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -68,8 +66,27 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     }
 
     @Override
-    public void closeOrder(Long orderId, Long userId, OrderStatus closed, ProcessStatus closed1, List<ProcessStatus> expire) {
-        orderInfoMapper.closeOrder(orderId,userId,closed,closed1,expire);
+    public void changeOrderStatus(Long orderId,
+                                  Long userId,
+                                  ProcessStatus closed,
+                                  List<ProcessStatus> expected) {
+        String orderStatus = closed.getOrderStatus().name();
+        String processStatus = closed.name();
+
+        List<String> expects = expected.stream().map(Enum::name).collect(Collectors.toList());
+
+        //幂等修改订单
+        orderInfoMapper.changeOrderStatus(orderId,userId,processStatus,orderStatus,expects);
+    }
+
+
+    @Override
+    public OrderInfo getOrderInfoByOutTradeNumberAndUserId(String outTradeNo, long userId) {
+
+        return getOne(new LambdaQueryWrapper<OrderInfo>()
+                .eq(OrderInfo::getOutTradeNo, outTradeNo)
+                .eq(OrderInfo::getUserId, userId));
+
     }
 
     private List<OrderDetail> prepareOrderDetail(OrderSubmitVo submitVo, OrderInfo orderInfo) {

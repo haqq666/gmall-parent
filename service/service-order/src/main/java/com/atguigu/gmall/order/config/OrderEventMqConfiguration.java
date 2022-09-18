@@ -1,7 +1,7 @@
 package com.atguigu.gmall.order.config;
 
 import com.atguigu.gmall.common.constant.SysRedisConstant;
-import com.atguigu.gmall.rabbit.MQConst;
+import com.atguigu.gmall.constant.MQConst;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.Exchange;
 import org.springframework.amqp.core.Queue;
@@ -10,7 +10,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.HashMap;
-import java.util.Map;
 
 /**
  * 交换机的定义
@@ -71,6 +70,24 @@ public class OrderEventMqConfiguration {
                 MQConst.EXCHANGE_ORDER_EVENT,
                 MQConst.RK_ORDER_DEAD,null);
     }
+
+    //订单支付成功队列
+    @Bean
+    public Queue orderPayedQueue(){
+        return new Queue(MQConst.RK_ORDER_PAYED,true,false,false);
+    }
+
+    @Bean
+    public Binding orderPayedQueueBinding(){
+        return new Binding(
+                MQConst.QUEUE_ORDER_PAYED,
+                Binding.DestinationType.QUEUE,
+                MQConst.EXCHANGE_ORDER_EVENT,
+                MQConst.RK_ORDER_PAYED,
+                null);
+    }
+
+
 }
 
 

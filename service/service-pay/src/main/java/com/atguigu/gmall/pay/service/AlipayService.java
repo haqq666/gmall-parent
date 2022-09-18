@@ -14,4 +14,6 @@ public interface AlipayService {
     String getAliPayPageHtml(Long orderId) throws AlipayApiException;
 
     boolean alrsaCheckV1(Map<String, String> payParam) throws AlipayApiException;
+
+    void sendPayedMsg(Map<String, String> payParam);
 }
