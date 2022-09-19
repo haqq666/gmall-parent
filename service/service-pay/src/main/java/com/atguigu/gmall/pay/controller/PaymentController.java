@@ -1,7 +1,6 @@
-package com.atguigu.gmall.pay.conntroller;
+package com.atguigu.gmall.pay.controller;
 
 import com.alipay.api.AlipayApiException;
-import com.atguigu.gmall.common.result.Result;
 import com.atguigu.gmall.common.util.Jsons;
 import com.atguigu.gmall.pay.service.AlipayService;
 import lombok.extern.slf4j.Slf4j;
@@ -50,7 +49,7 @@ public class PaymentController {
         boolean b = alipayService.alrsaCheckV1(payParam);
         if (b){
             log.info("异步通知抵达。支付成功，验签通过。数据：{}", Jsons.toStr(payParam));
-            //TODO 改订单信息
+            //发消息改订单信息
             alipayService.sendPayedMsg(payParam);
         }else {
             return "error";

@@ -74,7 +74,11 @@ public class OrderEventMqConfiguration {
     //订单支付成功队列
     @Bean
     public Queue orderPayedQueue(){
-        return new Queue(MQConst.RK_ORDER_PAYED,true,false,false);
+        return new Queue(
+                MQConst.QUEUE_ORDER_PAYED,
+                true,
+                false,
+                false);
     }
 
     @Bean

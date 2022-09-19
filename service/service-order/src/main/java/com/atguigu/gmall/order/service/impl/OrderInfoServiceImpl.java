@@ -1,4 +1,5 @@
 package com.atguigu.gmall.order.service.impl;
+
 import java.math.BigDecimal;
 
 import com.atguigu.gmall.common.auth.AuthUtils;
@@ -29,13 +30,13 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 
 /**
-* @author 乔豆麻担
-* @description 针对表【order_info(订单表 订单表)】的数据库操作Service实现
-* @createDate 2022-09-12 22:10:51
-*/
+ * @author 乔豆麻担
+ * @description 针对表【order_info(订单表 订单表)】的数据库操作Service实现
+ * @createDate 2022-09-12 22:10:51
+ */
 @Service
 public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo>
-    implements OrderInfoService{
+        implements OrderInfoService {
 
     @Resource
     OrderInfoMapper orderInfoMapper;
@@ -49,15 +50,15 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     public Long saveOrder(OrderSubmitVo submitVo, String tradeNo) {
 
         //保存订单信息
-       OrderInfo orderInfo = prepareOrderInfo(submitVo,tradeNo);
-       orderInfoMapper.insert(orderInfo);
+        OrderInfo orderInfo = prepareOrderInfo(submitVo, tradeNo);
+        orderInfoMapper.insert(orderInfo);
 
-       //保存明细信息
-        List<OrderDetail> details = prepareOrderDetail(submitVo,orderInfo);
+        //保存明细信息
+        List<OrderDetail> details = prepareOrderDetail(submitVo, orderInfo);
         orderDetailService.saveBatch(details);
 
         //给mq发消息，45分钟后改变订单状态
-        OrderMsg orderMsg = new OrderMsg(orderInfo.getUserId(),orderInfo.getId());
+        OrderMsg orderMsg = new OrderMsg(orderInfo.getUserId(), orderInfo.getId());
         rabbitTemplate.convertAndSend(MQConst.EXCHANGE_ORDER_EVENT,
                 MQConst.RK_ORDER_CREATED,
                 Jsons.toStr(orderMsg));
@@ -68,15 +69,16 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     @Override
     public void changeOrderStatus(Long orderId,
                                   Long userId,
-                                  ProcessStatus closed,
+                                  ProcessStatus whileChange,
                                   List<ProcessStatus> expected) {
-        String orderStatus = closed.getOrderStatus().name();
-        String processStatus = closed.name();
+
+        String orderStatus = whileChange.getOrderStatus().name();
+        String processStatus = whileChange.name();
 
         List<String> expects = expected.stream().map(Enum::name).collect(Collectors.toList());
 
         //幂等修改订单
-        orderInfoMapper.changeOrderStatus(orderId,userId,processStatus,orderStatus,expects);
+        orderInfoMapper.changeOrderStatus(orderId, userId, orderStatus,  processStatus, expects);
     }
 
 
@@ -87,6 +89,14 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 .eq(OrderInfo::getOutTradeNo, outTradeNo)
                 .eq(OrderInfo::getUserId, userId));
 
+    }
+
+    @Override
+    public OrderInfo getOrderInfoByOrderIdAndUserId(Long orderId, Long userId) {
+
+        return getOne(new LambdaQueryWrapper<OrderInfo>()
+                .eq(OrderInfo::getId, orderId)
+                .eq(OrderInfo::getUserId, userId));
     }
 
     private List<OrderDetail> prepareOrderDetail(OrderSubmitVo submitVo, OrderInfo orderInfo) {
