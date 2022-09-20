@@ -19,4 +19,10 @@ public class MQConst {
     public static final String QUEUE_WARE_ORDER = "queue.ware.order";
     public static final String EXCHANGE_WARE_ORDER = "exchange.direct.ware.order";
     public static final String RK_WARE_ORDER = "ware.order";
+    public static final String QUEUE_SECKILL_ORDERWAIT = "seckill-order-waiting-queue";
+    public static final String EXCHANGE_SECKILL_EVENT = "seckill-event-exchange";
+    public static final String RK_SECKILL_ORDERWAIT = "seckill.order.waiting";
+
+    public static final String RK_ORDER_SECKILLOK = "order.seckill.created";
+    public static final String QUEUE_ORDER_CREATE = "order-seckill-create-queue";
 }

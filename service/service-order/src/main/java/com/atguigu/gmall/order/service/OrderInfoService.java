@@ -22,4 +22,6 @@ public interface OrderInfoService extends IService<OrderInfo> {
     OrderInfo getOrderInfoByOutTradeNumberAndUserId(String outTradeNo, long userId);
 
     OrderInfo getOrderInfoByOrderIdAndUserId(Long orderId, Long userId);
+
+    Long submitSeckillOrder(OrderInfo orderInfo);
 }

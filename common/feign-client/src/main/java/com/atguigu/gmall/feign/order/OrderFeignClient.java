@@ -4,10 +4,9 @@ import com.atguigu.gmall.common.result.Result;
 import com.atguigu.gmall.model.order.OrderInfo;
 import com.atguigu.gmall.model.vo.order.CartInfoVo;
 import com.atguigu.gmall.model.vo.order.OrderConfirmDataVo;
+import com.atguigu.gmall.model.vo.seckill.SeckillConfirmVo;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -25,4 +24,9 @@ public interface OrderFeignClient {
 
     @GetMapping("/info/{orderId}")
     Result<OrderInfo> getOrderInfo(@PathVariable("orderId")Long orderId);
+
+    @PostMapping("/submitSeckillOrder")
+    Result<Long> submitSeckillOrder(@RequestBody OrderInfo orderInfo);
+
+
 }

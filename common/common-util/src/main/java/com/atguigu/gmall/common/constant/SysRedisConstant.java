@@ -25,4 +25,8 @@ public class SysRedisConstant {
     public static final Integer ORDER_CLOSE_TTL = 60*45;
     public static final Integer ORDER_REFUND_TTL = 60 * 60 * 24 * 30;
     public static final String MQ_RETRY = "rabbitMQ:retry:";
+    public static final String CACHE_SECKILL_GOODS = "seckill:goods:";
+    public static final String CACHE_SECKILL_GOODS_STOCK = "seckill:goods:stock:";
+    public static final String CACHE_SECKILL_GOODS_CODE = "seckill:goods:code:";
+    public static final String CACHE_SECKILL_GOODS_ORDER = "seckill:goods:order:";
 }

@@ -99,6 +99,20 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
                 .eq(OrderInfo::getUserId, userId));
     }
 
+    @Override
+    public Long submitSeckillOrder(OrderInfo orderInfo) {
+
+        orderInfoMapper.insert(orderInfo);
+        Long id = orderInfo.getId();
+        List<OrderDetail> list = orderInfo.getOrderDetailList();
+        list.stream().forEach(item -> item.setOrderId(id));
+
+        orderDetailService.saveBatch(list);
+
+
+        return id;
+    }
+
     private List<OrderDetail> prepareOrderDetail(OrderSubmitVo submitVo, OrderInfo orderInfo) {
         List<OrderDetail> detailList = submitVo.getOrderDetailList().stream()
                 .map(vo -> {
