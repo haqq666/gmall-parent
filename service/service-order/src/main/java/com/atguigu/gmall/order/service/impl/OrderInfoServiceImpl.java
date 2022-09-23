@@ -102,13 +102,17 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     @Override
     public Long submitSeckillOrder(OrderInfo orderInfo) {
 
+        //幂等操作
+        if (orderInfo.getId() != null){
+            return orderInfo.getId();
+        }
+
         orderInfoMapper.insert(orderInfo);
         Long id = orderInfo.getId();
         List<OrderDetail> list = orderInfo.getOrderDetailList();
         list.stream().forEach(item -> item.setOrderId(id));
 
         orderDetailService.saveBatch(list);
-
 
         return id;
     }
