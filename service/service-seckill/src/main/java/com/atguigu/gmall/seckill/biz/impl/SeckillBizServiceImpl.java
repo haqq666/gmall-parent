@@ -111,7 +111,7 @@ public class SeckillBizServiceImpl implements SeckillBizService {
         //查看是否已经发送过请求了
         Long increment = redisTemplate.opsForValue().increment(SysRedisConstant.CACHE_SECKILL_GOODS_CODE + skuIdStr);
         if (increment > 2){
-            return ResultCodeEnum.SECKILL_RUN;
+            return ResultCodeEnum.SUCCESS;
         }
 
         //开始秒杀
